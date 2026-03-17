@@ -1,0 +1,53 @@
+{
+    "dashboard": {
+        "title": "Control Center",
+        "agents_active": "Active agents",
+        "approvals_pending": "Pending approvals",
+        "assets_total": "Total assets",
+        "score_avg": "Portfolio avg score"
+    },
+    "agents": {
+        "orchestrator": "General Orchestrator",
+        "policy_brand": "Policy & Brand",
+        "seo_content": "SEO & Content",
+        "distribution": "Distribution",
+        "engagement_retention": "Engagement & Retention",
+        "monetization_leads": "Monetization & Leads",
+        "build_release": "Build & Release",
+        "infra_reliability": "Infra & Reliability",
+        "qa_experimentation": "QA & Experimentation",
+        "status": {
+            "pending": "Pending",
+            "running": "Running",
+            "completed": "Completed",
+            "failed": "Failed"
+        }
+    },
+    "approvals": {
+        "title": "Approval Queue",
+        "level": {
+            "N1": "Automatic",
+            "N2": "Semi-automatic",
+            "N3": "Human approval required"
+        },
+        "status": {
+            "pending": "Pending",
+            "approved": "Approved",
+            "denied": "Denied"
+        },
+        "actions": {
+            "approve": "Approve",
+            "deny": "Deny"
+        }
+    },
+    "common": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "view": "View",
+        "loading": "Loading...",
+        "no_data": "No data",
+        "confirm": "Confirm"
+    }
+}

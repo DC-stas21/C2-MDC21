@@ -1,0 +1,53 @@
+{
+    "dashboard": {
+        "title": "Panel de Control",
+        "agents_active": "Agentes activos",
+        "approvals_pending": "Aprobaciones pendientes",
+        "assets_total": "Activos totales",
+        "score_avg": "Score medio del portafolio"
+    },
+    "agents": {
+        "orchestrator": "Orquestador General",
+        "policy_brand": "Policy & Brand",
+        "seo_content": "SEO & Contenido",
+        "distribution": "Distribución",
+        "engagement_retention": "Engagement & Retención",
+        "monetization_leads": "Monetización & Leads",
+        "build_release": "Build & Release",
+        "infra_reliability": "Infra & Reliability",
+        "qa_experimentation": "QA & Experimentación",
+        "status": {
+            "pending": "Pendiente",
+            "running": "Ejecutando",
+            "completed": "Completado",
+            "failed": "Fallido"
+        }
+    },
+    "approvals": {
+        "title": "Cola de Aprobaciones",
+        "level": {
+            "N1": "Automático",
+            "N2": "Semiautomático",
+            "N3": "Requiere aprobación humana"
+        },
+        "status": {
+            "pending": "Pendiente",
+            "approved": "Aprobado",
+            "denied": "Denegado"
+        },
+        "actions": {
+            "approve": "Aprobar",
+            "deny": "Denegar"
+        }
+    },
+    "common": {
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "delete": "Eliminar",
+        "edit": "Editar",
+        "view": "Ver",
+        "loading": "Cargando...",
+        "no_data": "Sin datos",
+        "confirm": "Confirmar"
+    }
+}

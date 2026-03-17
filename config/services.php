@@ -14,10 +14,6 @@ return [
     |
     */
 
-    'postmark' => [
-        'key' => env('POSTMARK_API_KEY'),
-    ],
-
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],
@@ -28,11 +24,41 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'slack' => [
-        'notifications' => [
-            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
-            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
+    'claude' => [
+        'api_key' => env('CLAUDE_API_KEY'),
+        'model_orchestrator' => env('CLAUDE_MODEL_ORCHESTRATOR', 'claude-sonnet-4-5'),
+        'model_policy' => env('CLAUDE_MODEL_POLICY', 'claude-haiku-4-5'),
+    ],
+
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+        'model_research' => env('OPENAI_MODEL_RESEARCH', 'gpt-4o'),
+        'model_content' => env('OPENAI_MODEL_CONTENT', 'gpt-4o-mini'),
+    ],
+
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'groups' => [
+            'infra' => env('TELEGRAM_GROUP_INFRA'),
+            'content' => env('TELEGRAM_GROUP_CONTENT'),
+            'negocio' => env('TELEGRAM_GROUP_NEGOCIO'),
         ],
+    ],
+
+    'cloudflare' => [
+        'api_token' => env('CLOUDFLARE_API_TOKEN'),
+    ],
+
+    'github' => [
+        'token' => env('GITHUB_TOKEN'),
+    ],
+
+    'google_search_console' => [
+        'key' => env('GOOGLE_SEARCH_CONSOLE_KEY'),
+    ],
+
+    'semrush' => [
+        'api_key' => env('SEMRUSH_API_KEY'),
     ],
 
 ];
