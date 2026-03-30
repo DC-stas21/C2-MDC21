@@ -29,14 +29,15 @@ class NicheConfigResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('Información del activo')
-                ->description('Datos principales del dominio')
+            Forms\Components\Section::make('¿Qué activo quieres crear?')
+                ->description('Con estos datos C2 auto-configura políticas y prompts para los agentes')
                 ->schema([
                     Forms\Components\TextInput::make('domain')
                         ->label('Dominio')
                         ->required()
                         ->unique(ignoreRecord: true)
-                        ->placeholder('ejemplo.es'),
+                        ->placeholder('calculahipoteca.es')
+                        ->helperText('Solo el dominio, sin https://'),
                     Forms\Components\Select::make('vertical')
                         ->label('Vertical')
                         ->required()
@@ -46,30 +47,70 @@ class NicheConfigResource extends Resource
                             'Seguros' => 'Seguros',
                             'Préstamos' => 'Préstamos',
                             'Solar' => 'Solar',
+                            'Inmobiliaria' => 'Inmobiliaria',
+                            'Inversión' => 'Inversión',
+                            'Telecomunicaciones' => 'Telecomunicaciones',
                         ])
-                        ->searchable(),
-                    Forms\Components\TextInput::make('cpl')
-                        ->label('CPL (€)')
-                        ->numeric()
-                        ->prefix('€'),
+                        ->searchable()
+                        ->helperText('Sector del activo. Determina las fuentes y reglas de contenido.'),
                     Forms\Components\Toggle::make('is_active')
-                        ->label('Activo')
+                        ->label('Activar ahora')
                         ->default(true)
-                        ->helperText('Los agentes solo operan en activos activos'),
+                        ->helperText('Si lo activas, los agentes empiezan a operar sobre este activo'),
                 ])->columns(2),
 
-            Forms\Components\Section::make('Configuración')
+            Forms\Components\Section::make('Contexto para los agentes')
+                ->description('Cuanta más información des, mejor trabajarán los agentes de IA')
                 ->schema([
-                    Forms\Components\KeyValue::make('config')
-                        ->label('Parámetros')
-                        ->addActionLabel('Añadir')
-                        ->keyLabel('Clave')
-                        ->valueLabel('Valor'),
-                    Forms\Components\KeyValue::make('colors')
-                        ->label('Colores')
-                        ->addActionLabel('Añadir')
-                        ->keyLabel('Nombre')
-                        ->valueLabel('Hex'),
+                    Forms\Components\Textarea::make('config.description')
+                        ->label('Descripción del activo')
+                        ->required()
+                        ->rows(3)
+                        ->placeholder('Calculadora online de hipotecas para el mercado español. Permite simular cuotas mensuales, comparar tipos fijos vs variables, y estimar gastos de formalización.')
+                        ->helperText('¿Qué es este activo? ¿Qué hace? ¿Qué problema resuelve?')
+                        ->columnSpanFull(),
+                    Forms\Components\TextInput::make('config.target_audience')
+                        ->label('Audiencia')
+                        ->required()
+                        ->placeholder('Personas de 25-45 años que quieren comprar su primera vivienda en España')
+                        ->helperText('¿A quién va dirigido?')
+                        ->columnSpanFull(),
+                    Forms\Components\Select::make('config.tone')
+                        ->label('Tono')
+                        ->required()
+                        ->options([
+                            'profesional y cercano' => 'Profesional y cercano',
+                            'técnico pero accesible' => 'Técnico pero accesible',
+                            'informal y directo' => 'Informal y directo',
+                            'formal y autoritativo' => 'Formal y autoritativo',
+                            'educativo y empático' => 'Educativo y empático',
+                        ])
+                        ->default('profesional y cercano')
+                        ->helperText('Cómo deben hablar los agentes al crear contenido'),
+                    Forms\Components\TextInput::make('config.keywords')
+                        ->label('Keywords principales')
+                        ->placeholder('hipotecas España, calculadora hipoteca, simulador cuota mensual')
+                        ->helperText('Separadas por coma. Los agentes SEO las usarán como foco.')
+                        ->columnSpanFull(),
+                    Forms\Components\Textarea::make('config.notes')
+                        ->label('Notas adicionales')
+                        ->rows(2)
+                        ->placeholder('No mencionar bancos específicos. Enfoque en educación financiera, no en venta directa.')
+                        ->helperText('Cualquier instrucción extra para los agentes')
+                        ->columnSpanFull(),
+                ]),
+
+            Forms\Components\Section::make('Diseño')
+                ->description('Colores del activo')
+                ->collapsed()
+                ->schema([
+                    Forms\Components\TextInput::make('colors.primary')
+                        ->label('Color primario')
+                        ->placeholder('#4f46e5')
+                        ->helperText('Hex del color principal'),
+                    Forms\Components\TextInput::make('colors.secondary')
+                        ->label('Color secundario')
+                        ->placeholder('#0ea5e9'),
                 ])->columns(2),
         ]);
     }
@@ -78,16 +119,28 @@ class NicheConfigResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('domain')->label('Dominio')->searchable()->sortable()->weight('bold'),
-                Tables\Columns\TextColumn::make('vertical')->label('Vertical')->badge()->sortable(),
-                Tables\Columns\TextColumn::make('cpl')->label('CPL')->money('eur')->sortable(),
-                Tables\Columns\IconColumn::make('is_active')->label('Activo')->boolean(),
-                Tables\Columns\TextColumn::make('created_at')->label('Creado')->since()->sortable(),
+                Tables\Columns\TextColumn::make('domain')
+                    ->label('Dominio')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('bold'),
+                Tables\Columns\TextColumn::make('vertical')
+                    ->label('Vertical')
+                    ->badge()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('config.description')
+                    ->label('Descripción')
+                    ->limit(50)
+                    ->tooltip(fn ($record) => $record->config['description'] ?? ''),
+                Tables\Columns\IconColumn::make('is_active')
+                    ->label('Activo')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Creado')
+                    ->since()
+                    ->sortable(),
             ])
-            ->defaultSort('domain')
-            ->filters([
-                Tables\Filters\TernaryFilter::make('is_active')->label('Estado'),
-            ])
+            ->defaultSort('created_at', 'desc')
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

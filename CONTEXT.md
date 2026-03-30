@@ -2,21 +2,50 @@
 
 > Pega este archivo completo al inicio de cualquier chat de IA antes de escribir código.
 > La IA debe leerlo completo y confirmar que lo ha entendido antes de empezar.
-> Versión: 1.5 · Fecha: Marzo 2026 · Estado: EN DESARROLLO — Frontend + 9 agentes + WebSockets + Tests
+> Versión: 2.0 · Fecha: Marzo 2026 · Estado: EN DESARROLLO — Reestructuración hacia fábrica de webs
 
 ---
 
 ## QUÉ ESTAMOS CONSTRUYENDO
 
-**C2** es el centro de control de **MDC21 Agency**. Una plataforma operativa desde la que un equipo de 4 socios gestiona una red de webs gestionadas por IA (activos digitales: calculadoras, comparadores, herramientas verticales).
+**C2** es una **fábrica automatizada de webs**. Un socio crea un activo (dominio + vertical + contexto), y los agentes de IA construyen la web completa, la despliegan y la operan. El contenido SEO es secundario — el objetivo principal es generar y publicar webs funcionales de forma autónoma.
 
-C2 no es un panel admin. Es una plataforma que:
-- Opera 9 agentes de IA en background
-- Gestiona el ciclo completo de contenido: generación → validación → aprobación humana → publicación
-- Controla deploys, rollbacks y feature flags de webs independientes
-- Centraliza alertas, métricas, leads y monetización del portafolio completo
+**C2 NO es** un gestor de contenido ni un CMS. Es una plataforma que:
+- **Genera webs completas** a partir de un contexto (calculadoras, comparadores, herramientas verticales)
+- **Diseña automáticamente** (colores, tipografía, layout) según el vertical y tono
+- **Despliega y opera** las webs con 9 agentes de IA en background
+- **Monitorea** rendimiento, uptime y métricas de todo el portafolio
 
-Las **webs gestionadas** (activos) son proyectos Laravel + Vue independientes. C2 las crea, las opera y las escala. Son entidades separadas, no parte de esta app.
+### Flujo principal
+```
+Socio crea activo en /admin (dominio + contexto)
+    → Setup automático (políticas + prompts)
+    → Web Builder Agent genera la web completa
+    → Policy Brand valida todo el contenido
+    → QA testea (Pest + Lighthouse + Playwright)
+    → Build & Release deploya a staging
+    → Socio aprueba (N3) → producción
+    → Operación continua (Orquestador cada 12h + Infra cada hora)
+```
+
+### Infraestructura
+Todo en un solo servidor (C2 + webs generadas):
+```
+/var/www/c2-mdc21/            ← Panel de control
+/var/www/calculahipoteca/     ← Web generada por agentes
+/var/www/comparaenergia/      ← Web generada por agentes
+...
+Nginx → cada dominio apunta a su carpeta
+PostgreSQL + Redis compartidos
+Certbot → SSL automático por dominio
+```
+
+### Lo que el socio hace manualmente
+1. Compra el dominio
+2. Apunta DNS a la IP del servidor
+3. Crea el activo en /admin con el contexto
+4. Aprueba el deploy a producción (N3)
+5. Abre el dashboard 30min/día para supervisar y aprobar
 
 ---
 
@@ -593,15 +622,25 @@ Dashboard · Agentes · Aprobaciones · Activos · Contenido
 - [x] Composable `useRealtimeDashboard` — escucha eventos y refresca Inertia props
 - [x] Dashboard conectado al composable (auto-refresh al recibir eventos)
 
+### ✅ COMPLETADO — Auto-setup de activos (MDC21-10)
+- [x] `AssetSetupService` — auto-crea políticas + prompts al crear activo
+- [x] Formulario Filament rediseñado: contexto rico (descripción, audiencia, tono, keywords)
+- [x] Hook afterCreate: setup automático al crear activo en Filament
+- [x] Filament limpio: solo 3 recursos de configuración (Activos, Políticas, Prompts)
+- [x] CPL/Leads removido del formulario (sistema de leads para futuro)
+
+### ⬜ PRÓXIMA SESIÓN — Fábrica de webs
+- [ ] **Template base de web** (Laravel + Vue) que se clona y personaliza
+- [ ] **Web Builder Agent** — el agente principal que genera la web completa
+- [ ] **Pipeline**: crear activo → generar diseño → generar páginas → generar contenido → policy → QA → deploy
+- [ ] Reestructurar agentes para girar en torno a construcción de webs
+- [ ] Nginx auto-config por dominio en el servidor
+
 ### ⬜ PENDIENTE — Necesita credenciales externas
 - [ ] API keys: `CLAUDE_API_KEY` + `OPENAI_API_KEY` → agentes con IA real
 - [ ] `TELEGRAM_BOT_TOKEN` + IDs de grupos → notificaciones activas
-- [ ] Levantar Reverb en producción (`php artisan reverb:start`)
-- [ ] Infra AWS (EC2 + RDS + ElastiCache + S3 + Secrets Manager)
-- [ ] Umami + Prometheus + Grafana + Sentry + Uptime Kuma
-- [ ] Playwright + Lighthouse CI reales
+- [ ] Infra servidor (EC2 o VPS) con Nginx + PostgreSQL + Redis
 - [ ] Sistema de Leads activado (código existe, oculto del sidebar)
-- [ ] Primer activo desplegado desde C2
 
 ---
 
