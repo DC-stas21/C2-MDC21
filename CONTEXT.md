@@ -2,7 +2,7 @@
 
 > Pega este archivo completo al inicio de cualquier chat de IA antes de escribir código.
 > La IA debe leerlo completo y confirmar que lo ha entendido antes de empezar.
-> Versión: 1.3 · Fecha: Marzo 2026 · Estado: EN DESARROLLO — Cimientos completados
+> Versión: 1.4 · Fecha: Marzo 2026 · Estado: EN DESARROLLO — Frontend completo + cimientos
 
 ---
 
@@ -124,7 +124,17 @@ c2-mdc21/
 │   │       ├── AgentRunsOverviewWidget.php   # Stats agentes en dashboard
 │   │       ├── PendingApprovalsWidget.php    # Cola N3 con Aprobar/Denegar
 │   │       └── NicheScoresWidget.php         # Portafolio con Score Compuesto
-│   ├── Http/Controllers/Controller.php
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── Controller.php             # Base abstracto
+│   │   │   ├── DashboardController.php    # Stats, agentes, aprobaciones, timeline, scores
+│   │   │   ├── AgentRunController.php     # Perfiles por agente, métricas, filtros, historial
+│   │   │   ├── ApprovalController.php     # Cola N3, approve/deny con audit trail, gobernanza
+│   │   │   ├── NicheConfigController.php  # Portafolio con scores y distribución
+│   │   │   ├── ContentController.php      # Editorial board, filtros por estado/activo
+│   │   │   └── LeadController.php         # Pipeline leads (oculto, futuro)
+│   │   └── Middleware/
+│   │       └── HandleInertiaRequests.php   # Comparte auth + flash a todas las páginas
 │   ├── Jobs/Agents/
 │   │   ├── BaseAgentJob.php                  # Abstracto: registra en agent_runs
 │   │   ├── OrchestratorAgentJob.php          # Claude Sonnet Batch, ciclo 12h
@@ -188,10 +198,25 @@ c2-mdc21/
 │   │   ├── app.ts                     # Entry point Inertia + Vue 3 + i18n
 │   │   ├── bootstrap.ts               # Axios con tipos TS
 │   │   ├── i18n.ts                    # createI18n con es/en
-│   │   ├── Components/                # (vacío, listo para componentes)
-│   │   ├── Layouts/                   # (vacío, listo para layouts)
+│   │   ├── Components/
+│   │   │   ├── StatsCard.vue              # Card de métrica reutilizable
+│   │   │   ├── ApprovalRow.vue            # Fila aprobación con aprobar/denegar inline
+│   │   │   ├── AgentStatusGrid.vue        # Grid 3x3 agentes expandible con descripción
+│   │   │   ├── AgentProfileCard.vue       # Card detallada por agente (métricas, capa, modelo)
+│   │   │   ├── ActivityTimeline.vue       # Feed cronológico agentes + aprobaciones
+│   │   │   └── Charts/
+│   │   │       ├── AgentActivityChart.vue # Bar chart ECharts — actividad semanal
+│   │   │       ├── ScoreGaugeChart.vue    # Gauge ECharts — score portafolio
+│   │   │       └── LeadsPieChart.vue      # Donut ECharts — pipeline leads (futuro)
+│   │   ├── Layouts/
+│   │   │   └── AppLayout.vue              # Sidebar + topbar + responsive + flash
 │   │   ├── Pages/
-│   │   │   └── Dashboard.vue          # Placeholder dashboard con i18n
+│   │   │   ├── Dashboard.vue              # 5 métricas, grid agentes, gráficas, aprobaciones, timeline
+│   │   │   ├── AgentRuns/Index.vue        # Perfiles por capa, filtros, errores, historial
+│   │   │   ├── Approvals/Index.vue        # Urgencia, gobernanza, audit trail, filtros
+│   │   │   ├── NicheConfigs/Index.vue     # Portafolio cards/tabla, score, detalle
+│   │   │   ├── Content/Index.vue          # Editorial board, tabs estado, E-E-A-T
+│   │   │   └── Leads/Index.vue            # Pipeline leads (oculto, futuro)
 │   │   └── types/
 │   │       └── index.d.ts             # Tipos TS: AgentRun, Approval, NicheConfig, etc.
 │   └── lang/
@@ -200,6 +225,9 @@ c2-mdc21/
 ├── tests/
 │   ├── Feature/ExampleTest.php        # GET /admin/login → 200
 │   └── Unit/ExampleTest.php
+├── database/seeders/
+│   ├── DemoSeeder.php                     # Nichos, agent_runs, aprobaciones, leads
+│   └── ContentSeeder.php                  # 11 artículos de prueba
 ├── CONTEXT.md                         # Este archivo
 ├── tsconfig.json                      # TypeScript strict mode
 └── vite.config.js                     # Laravel + Vue + Tailwind CSS 4
@@ -430,6 +458,43 @@ SENTRY_LARAVEL_DSN
 
 ---
 
+## RUTAS INERTIA — FRONTEND VUE
+
+| Método | Ruta | Controller | Página |
+|---|---|---|---|
+| GET | `/` | DashboardController | Dashboard.vue |
+| GET | `/agent-runs` | AgentRunController@index | AgentRuns/Index.vue |
+| GET | `/approvals` | ApprovalController@index | Approvals/Index.vue |
+| POST | `/approvals/{id}/approve` | ApprovalController@approve | — |
+| POST | `/approvals/{id}/deny` | ApprovalController@deny | — |
+| GET | `/assets` | NicheConfigController@index | NicheConfigs/Index.vue |
+| GET | `/content` | ContentController@index | Content/Index.vue |
+| GET | `/leads` | LeadController@index | Leads/Index.vue (oculto) |
+
+Todas las rutas requieren `auth` middleware. Guests redirigen a `/admin/login` (Filament).
+
+### Middleware Inertia
+- `HandleInertiaRequests` — comparte `auth.user` + `flash.success/error` a todas las páginas
+- Root view: `resources/views/app.blade.php`
+
+### Sidebar navegación (AppLayout.vue)
+Dashboard · Agentes · Aprobaciones · Activos · Contenido
+*(Leads comentado hasta implementación futura)*
+
+---
+
+## SEEDERS DE DESARROLLO
+
+```bash
+php artisan db:seed --class=DemoSeeder      # Nichos + scores + agent_runs + aprobaciones + leads
+php artisan db:seed --class=ContentSeeder    # 11 artículos de prueba
+```
+
+- **DemoSeeder**: 5 nichos con scores en Redis, 7 días de agent_runs (8-18/día), 12 aprobaciones, 35 leads
+- **ContentSeeder**: 11 blog posts distribuidos en 4 activos con status variados
+
+---
+
 ## CONVENCIONES DEL PROYECTO
 
 | Área | Convención |
@@ -450,7 +515,7 @@ SENTRY_LARAVEL_DSN
 
 ## ESTADO ACTUAL DEL PROYECTO
 
-### ✅ COMPLETADO
+### ✅ COMPLETADO — Cimientos (MDC21-01)
 - [x] Repositorio GitHub con ramas `main` y `develop`
 - [x] Entorno local: DBngin PostgreSQL 16.4 + Redis via Homebrew + PHP 8.5.3
 - [x] Laravel 12 instalado con PostgreSQL + Redis (predis)
@@ -475,26 +540,36 @@ SENTRY_LARAVEL_DSN
 - [x] 9 Jobs de agentes con estructura, colas y TODOs de implementación
 - [x] `config/services.php` — Claude, OpenAI, Telegram, Cloudflare, GitHub, SEMrush
 - [x] `AppServiceProvider` con singletons de todos los services
-- [x] Vue 3.5 + TypeScript strict + Inertia.js 2.0
-- [x] ECharts 5.6 + Vue i18n 11.3
-- [x] Vite 7 con @vitejs/plugin-vue 6.0 (compatible)
-- [x] `tsconfig.json` strict mode + paths alias `@/`
-- [x] `resources/js/app.ts` — entry point completo
-- [x] `resources/js/types/index.d.ts` — tipos base del dominio
-- [x] `resources/js/Pages/Dashboard.vue` — placeholder
-- [x] `resources/lang/es/app.json` + `resources/lang/en/app.json`
-- [x] 3 Filament Widgets del dashboard (AgentRuns, Approvals, NicheScores)
-- [x] `.env.example` completo con todas las vars del stack
-- [x] Pint ✅ 120 archivos — Pest ✅ 2 passed
+
+### ✅ COMPLETADO — Frontend (MDC21-02)
+- [x] Inertia.js v3 server-side instalado + HandleInertiaRequests middleware
+- [x] `resources/views/app.blade.php` — blade entry point con `@inertia`
+- [x] `resources/js/Layouts/AppLayout.vue` — sidebar, topbar, responsive, flash messages
+- [x] Font Inter (tipografía profesional SaaS)
+- [x] Light theme profesional (paleta zinc, sin colores innecesarios)
+- [x] **Dashboard** — 5 métricas, grid 9 agentes interactivo (click → expandir), gráfica actividad ECharts, aprobaciones pendientes, score gauge, timeline actividad
+- [x] **Agentes** — perfiles por capa (Núcleo/Funcional/Operativo), métricas por agente (éxito, duración, errores), filtros combinables agente+estado, errores recientes, historial paginado
+- [x] **Aprobaciones** — barra urgencia, métricas (pendientes, resueltas, tiempo respuesta, ratio), tabs por estado, filtros por nivel N1/N2/N3 y agente, panel gobernanza, audit trail decisiones, barras resumen semanal
+- [x] **Activos** — métricas portafolio, toggle cards/tabla, detalle expandible por activo, score gauge, distribución salud
+- [x] **Contenido** — editorial board, métricas por estado, tabs, expandible con slug/fuentes/E-E-A-T/metodología, filtro por activo
+- [x] **Leads** — pipeline completo con filtros, tabla con score visual, revenue, donut chart *(página oculta del sidebar, código preservado para futuro)*
+- [x] 8 componentes Vue reutilizables (StatsCard, ApprovalRow, AgentStatusGrid, AgentProfileCard, ActivityTimeline, AgentActivityChart, ScoreGaugeChart, LeadsPieChart)
+- [x] 6 Controllers Inertia con datos ricos (stats, perfiles, filtros, métricas calculadas)
+- [x] i18n es/en completo con todas las claves (nav, dashboard, agents, approvals, assets, scores, common)
+- [x] DemoSeeder + ContentSeeder con datos realistas
+- [x] Auth redirect a Filament login, Valet link configurado
+- [x] Pint ✅ — Pest ✅ 2 passed — Build ✅
 
 ### ⬜ PENDIENTE
+- [ ] Tests reales con Pest (rutas, controllers, seeders)
 - [ ] Implementar lógica real en los 9 Jobs (los TODOs están en el código)
+- [ ] Primer agente funcional: InfraReliabilityAgentJob
+- [ ] WebSockets con Reverb — dashboard en tiempo real
 - [ ] Telegram Bot configurado con grupos separados
-- [ ] Dashboard Vue con Score Compuesto real y gráficas ECharts
-- [ ] Layouts Inertia (`resources/js/Layouts/`)
 - [ ] Infra AWS levantada (EC2 + RDS + ElastiCache + S3 + Secrets Manager)
 - [ ] Umami + Prometheus + Grafana + Sentry + Uptime Kuma instalados
 - [ ] Playwright + Lighthouse CI configurados
+- [ ] Sistema de Leads activado (código existe, falta integración con activos reales)
 - [ ] Primer activo desplegado desde C2
 
 ---
