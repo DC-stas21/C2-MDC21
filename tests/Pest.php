@@ -9,4 +9,7 @@ pest()->extend(TestCase::class)
 
 uses()->beforeEach(function () {
     $this->withoutVite();
+
+    // Disable Inertia page component file existence check (no Node build in CI)
+    config()->set('inertia.testing.ensure_pages_exist', false);
 })->in('Feature');
