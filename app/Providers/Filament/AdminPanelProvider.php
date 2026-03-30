@@ -2,9 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Widgets\AgentRunsOverviewWidget;
-use App\Filament\Widgets\NicheScoresWidget;
-use App\Filament\Widgets\PendingApprovalsWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -31,6 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->spa(false)
+            ->brandName('C2 Config')
             ->colors([
                 'primary' => Color::Indigo,
             ])
@@ -39,12 +37,8 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                AgentRunsOverviewWidget::class,
-                PendingApprovalsWidget::class,
-                NicheScoresWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

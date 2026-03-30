@@ -14,20 +14,64 @@ class PromptVersionResource extends Resource
 {
     protected static ?string $model = PromptVersion::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-command-line';
 
-    protected static ?string $navigationGroup = 'Core';
+    protected static ?string $navigationGroup = 'Configuración';
+
+    protected static ?string $navigationLabel = 'Prompts';
+
+    protected static ?string $modelLabel = 'Prompt';
+
+    protected static ?string $pluralModelLabel = 'Prompts';
 
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('agent_type')->required(),
-            Forms\Components\TextInput::make('version')->numeric()->required(),
-            Forms\Components\TextInput::make('model')->required(),
-            Forms\Components\Textarea::make('prompt_text')->required()->columnSpanFull(),
-            Forms\Components\Toggle::make('is_active')->default(false),
+            Forms\Components\Section::make('Configuración del prompt')
+                ->description('Define el prompt que usará cada agente de IA')
+                ->schema([
+                    Forms\Components\Select::make('agent_type')
+                        ->label('Agente')
+                        ->required()
+                        ->options([
+                            'orchestrator' => 'Orquestador General',
+                            'policy_brand' => 'Policy & Brand',
+                            'seo_content' => 'SEO & Contenido',
+                            'distribution' => 'Distribución',
+                            'engagement_retention' => 'Engagement & Retención',
+                            'monetization_leads' => 'Monetización & Leads',
+                        ]),
+                    Forms\Components\TextInput::make('version')
+                        ->label('Versión')
+                        ->numeric()
+                        ->required()
+                        ->default(1),
+                    Forms\Components\Select::make('model')
+                        ->label('Modelo IA')
+                        ->required()
+                        ->options([
+                            'claude-sonnet-4-5' => 'Claude Sonnet 4.5',
+                            'claude-haiku-4-5' => 'Claude Haiku 4.5',
+                            'gpt-4o' => 'GPT-4o',
+                            'gpt-4o-mini' => 'GPT-4o Mini',
+                        ]),
+                    Forms\Components\Toggle::make('is_active')
+                        ->label('Activo')
+                        ->default(false)
+                        ->helperText('Solo un prompt activo por agente'),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Prompt')
+                ->schema([
+                    Forms\Components\Textarea::make('prompt_text')
+                        ->label('Texto del prompt')
+                        ->required()
+                        ->rows(12)
+                        ->columnSpanFull()
+                        ->placeholder('Escribe el prompt...'),
+                ]),
         ]);
     }
 
@@ -35,16 +79,46 @@ class PromptVersionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('agent_type')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('version')->sortable(),
-                Tables\Columns\TextColumn::make('model')->searchable(),
-                Tables\Columns\IconColumn::make('is_active')->boolean(),
-                Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('agent_type')->label('Agente')->badge()
+                    ->formatStateUsing(fn (string $state) => match ($state) {
+                        'orchestrator' => 'Orquestador',
+                        'policy_brand' => 'Policy',
+                        'seo_content' => 'SEO',
+                        'distribution' => 'Distribución',
+                        'engagement_retention' => 'Engagement',
+                        'monetization_leads' => 'Monetización',
+                        default => $state,
+                    })->sortable(),
+                Tables\Columns\TextColumn::make('version')->label('v')->sortable(),
+                Tables\Columns\TextColumn::make('model')->label('Modelo')->badge()->color('gray'),
+                Tables\Columns\TextColumn::make('prompt_text')->label('Prompt')->limit(60),
+                Tables\Columns\IconColumn::make('is_active')->label('Activo')->boolean(),
+                Tables\Columns\TextColumn::make('created_at')->label('Creado')->since()->sortable(),
             ])
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort('agent_type')
             ->filters([
-                Tables\Filters\SelectFilter::make('agent_type')
-                    ->options(fn () => PromptVersion::distinct()->pluck('agent_type', 'agent_type')->toArray()),
+                Tables\Filters\SelectFilter::make('agent_type')->label('Agente')
+                    ->options([
+                        'orchestrator' => 'Orquestador',
+                        'policy_brand' => 'Policy',
+                        'seo_content' => 'SEO',
+                        'distribution' => 'Distribución',
+                        'engagement_retention' => 'Engagement',
+                        'monetization_leads' => 'Monetización',
+                    ]),
+                Tables\Filters\TernaryFilter::make('is_active'),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('duplicate')
+                    ->label('Duplicar')
+                    ->icon('heroicon-o-document-duplicate')
+                    ->action(function (PromptVersion $record) {
+                        $record->replicate()->fill([
+                            'version' => $record->version + 1,
+                            'is_active' => false,
+                        ])->save();
+                    }),
             ]);
     }
 
