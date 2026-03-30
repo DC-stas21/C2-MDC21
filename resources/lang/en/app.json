@@ -4,7 +4,20 @@
         "agents_active": "Active agents",
         "approvals_pending": "Pending approvals",
         "assets_total": "Total assets",
-        "score_avg": "Portfolio avg score"
+        "score_avg": "Portfolio avg score",
+        "completed_today": "completed today",
+        "agent_activity": "Agent activity (7 days)",
+        "portfolio_score": "Portfolio score",
+        "active_assets": "Active assets"
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "agents": "Agents",
+        "approvals": "Approvals",
+        "assets": "Assets",
+        "content": "Content",
+        "leads": "Leads",
+        "system_online": "System online"
     },
     "agents": {
         "orchestrator": "General Orchestrator",
@@ -21,6 +34,15 @@
             "running": "Running",
             "completed": "Completed",
             "failed": "Failed"
+        },
+        "failed_today": "Failed today",
+        "table": {
+            "agent": "Agent",
+            "status": "Status",
+            "duration": "Duration",
+            "error": "Error",
+            "time": "Time",
+            "total_runs": "runs"
         }
     },
     "approvals": {
@@ -38,7 +60,23 @@
         "actions": {
             "approve": "Approve",
             "deny": "Deny"
-        }
+        },
+        "none_pending": "No pending approvals",
+        "deny_reason": "Reason for denial...",
+        "approved_today": "Approved today",
+        "denied_today": "Denied today"
+    },
+    "assets": {
+        "total": "Total assets",
+        "active": "Active",
+        "inactive": "Inactive"
+    },
+    "score": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "average": "Average",
+        "poor": "Poor",
+        "critical": "Critical"
     },
     "common": {
         "save": "Save",
@@ -46,6 +84,7 @@
         "delete": "Delete",
         "edit": "Edit",
         "view": "View",
+        "view_all": "View all",
         "loading": "Loading...",
         "no_data": "No data",
         "confirm": "Confirm"

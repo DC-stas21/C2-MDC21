@@ -4,7 +4,20 @@
         "agents_active": "Agentes activos",
         "approvals_pending": "Aprobaciones pendientes",
         "assets_total": "Activos totales",
-        "score_avg": "Score medio del portafolio"
+        "score_avg": "Score medio del portafolio",
+        "completed_today": "completados hoy",
+        "agent_activity": "Actividad de agentes (7 días)",
+        "portfolio_score": "Score del portafolio",
+        "active_assets": "Activos activos"
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "agents": "Agentes",
+        "approvals": "Aprobaciones",
+        "assets": "Activos",
+        "content": "Contenido",
+        "leads": "Leads",
+        "system_online": "Sistema operativo"
     },
     "agents": {
         "orchestrator": "Orquestador General",
@@ -21,6 +34,15 @@
             "running": "Ejecutando",
             "completed": "Completado",
             "failed": "Fallido"
+        },
+        "failed_today": "Fallidos hoy",
+        "table": {
+            "agent": "Agente",
+            "status": "Estado",
+            "duration": "Duración",
+            "error": "Error",
+            "time": "Hace",
+            "total_runs": "ejecuciones"
         }
     },
     "approvals": {
@@ -38,7 +60,23 @@
         "actions": {
             "approve": "Aprobar",
             "deny": "Denegar"
-        }
+        },
+        "none_pending": "No hay aprobaciones pendientes",
+        "deny_reason": "Razón de denegación...",
+        "approved_today": "Aprobados hoy",
+        "denied_today": "Denegados hoy"
+    },
+    "assets": {
+        "total": "Total activos",
+        "active": "Activos",
+        "inactive": "Inactivo"
+    },
+    "score": {
+        "excellent": "Excelente",
+        "good": "Bueno",
+        "average": "Regular",
+        "poor": "Bajo",
+        "critical": "Crítico"
     },
     "common": {
         "save": "Guardar",
@@ -46,6 +84,7 @@
         "delete": "Eliminar",
         "edit": "Editar",
         "view": "Ver",
+        "view_all": "Ver todo",
         "loading": "Cargando...",
         "no_data": "Sin datos",
         "confirm": "Confirmar"

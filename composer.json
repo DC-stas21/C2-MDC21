@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.4",
         "filament/filament": "^3.3",
+        "inertiajs/inertia-laravel": "^3.0",
         "laravel/framework": "^12.0",
         "laravel/horizon": "^5.45",
         "laravel/pennant": "^1.21",
