@@ -52,10 +52,11 @@ class ApprovalController extends Controller
             'decided_at' => now(),
         ]);
 
-        // TODO: Fix activity_log causer_id column type (bigint → uuid) then re-enable
-        // activity()->performedOn($approval)->causedBy($request->user())
-        //     ->withProperties(['action' => 'approved', 'note' => $request->input('note')])
-        //     ->log('Approval approved');
+        activity()
+            ->performedOn($approval)
+            ->causedBy($request->user())
+            ->withProperties(['action' => 'approved', 'note' => $request->input('note')])
+            ->log('Approval approved');
 
         return back()->with('success', 'Aprobado correctamente.');
     }
@@ -69,10 +70,11 @@ class ApprovalController extends Controller
             'decided_at' => now(),
         ]);
 
-        // TODO: Fix activity_log causer_id column type (bigint → uuid) then re-enable
-        // activity()->performedOn($approval)->causedBy($request->user())
-        //     ->withProperties(['action' => 'denied', 'note' => $request->input('note')])
-        //     ->log('Approval denied');
+        activity()
+            ->performedOn($approval)
+            ->causedBy($request->user())
+            ->withProperties(['action' => 'denied', 'note' => $request->input('note')])
+            ->log('Approval denied');
 
         return back()->with('success', 'Denegado correctamente.');
     }

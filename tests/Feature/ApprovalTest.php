@@ -59,3 +59,30 @@ test('can deny a pending approval', function () {
     expect($approval->status)->toBe('denied');
     expect($approval->decision_note)->toBe('Not ready yet');
 });
+
+test('approval actions are logged in activity log', function () {
+    $user = User::factory()->create();
+
+    $run = AgentRun::create([
+        'agent_type' => 'distribution',
+        'status' => 'completed',
+        'started_at' => now()->subMinutes(5),
+        'finished_at' => now(),
+    ]);
+
+    $approval = Approval::create([
+        'agent_run_id' => $run->id,
+        'action' => 'Test action',
+        'level' => 'N3',
+        'status' => 'pending',
+        'reason' => 'Test',
+    ]);
+
+    $this->actingAs($user)->post("/approvals/{$approval->id}/approve");
+
+    $this->assertDatabaseHas('activity_log', [
+        'subject_type' => Approval::class,
+        'subject_id' => $approval->id,
+        'causer_id' => $user->id,
+    ]);
+});
