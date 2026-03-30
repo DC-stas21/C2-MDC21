@@ -2,7 +2,7 @@
 
 > Pega este archivo completo al inicio de cualquier chat de IA antes de escribir código.
 > La IA debe leerlo completo y confirmar que lo ha entendido antes de empezar.
-> Versión: 1.4 · Fecha: Marzo 2026 · Estado: EN DESARROLLO — Frontend completo + cimientos
+> Versión: 1.5 · Fecha: Marzo 2026 · Estado: EN DESARROLLO — Frontend + 9 agentes + WebSockets + Tests
 
 ---
 
@@ -158,8 +158,12 @@ c2-mdc21/
 │   │   ├── Policy.php
 │   │   ├── PromptVersion.php
 │   │   └── User.php
+│   ├── Events/
+│   │   ├── AgentRunUpdated.php        # Broadcast cuando un agente completa/falla
+│   │   ├── ApprovalCreated.php        # Broadcast cuando se crea una aprobación N3
+│   │   └── InfraStatusUpdated.php     # Broadcast estado de infra
 │   ├── Providers/
-│   │   ├── AppServiceProvider.php     # Singletons: Claude, ChatGPT, Rate, Prompt, Score
+│   │   ├── AppServiceProvider.php     # Singletons: Claude, ChatGPT, Rate, Prompt, Score, Telegram
 │   │   ├── Filament/AdminPanelProvider.php
 │   │   ├── HorizonServiceProvider.php
 │   │   └── TelescopeServiceProvider.php
@@ -169,12 +173,15 @@ c2-mdc21/
 │       │   ├── ChatGPTService.php      # message() + batch() + getBatchStatus()
 │       │   └── RateLimiterService.php  # attempt() con reintentos automáticos
 │       ├── PromptRegistry.php          # Carga prompts activos desde DB con cache Redis
-│       └── ScoreComposite.php          # Calcula score 0-100 con 6 dimensiones ponderadas
+│       ├── ScoreComposite.php          # Calcula score 0-100 con 6 dimensiones ponderadas
+│       └── TelegramService.php        # send() + infraAlert() + contentNotify() + approvalNeeded()
 ├── config/
 │   ├── activitylog.php
 │   ├── services.php                   # Claude, OpenAI, Telegram, Cloudflare, GitHub, SEMrush
 │   └── ...
-├── database/migrations/               # 19 migraciones ejecutadas
+│   │   └── composables/
+│   │       └── useRealtimeDashboard.ts    # WebSocket listener para dashboard en vivo
+├── database/migrations/               # 20 migraciones ejecutadas
 │   ├── 0001_01_01_* (3 Laravel base)
 │   ├── 2026_03_16_000001_create_agent_runs_table.php
 │   ├── 2026_03_16_000002_create_approvals_table.php
@@ -537,7 +544,7 @@ php artisan db:seed --class=ContentSeeder    # 11 artículos de prueba
 - [x] `app/Services/PromptRegistry.php` — prompts activos desde DB con cache
 - [x] `app/Services/ScoreComposite.php` — score 0-100 con 6 dimensiones
 - [x] `app/Jobs/Agents/BaseAgentJob.php` — registro automático en `agent_runs`
-- [x] 9 Jobs de agentes con estructura, colas y TODOs de implementación
+- [x] 9 Jobs de agentes implementados con lógica funcional + fallbacks sin API key
 - [x] `config/services.php` — Claude, OpenAI, Telegram, Cloudflare, GitHub, SEMrush
 - [x] `AppServiceProvider` con singletons de todos los services
 
@@ -558,18 +565,54 @@ php artisan db:seed --class=ContentSeeder    # 11 artículos de prueba
 - [x] i18n es/en completo con todas las claves (nav, dashboard, agents, approvals, assets, scores, common)
 - [x] DemoSeeder + ContentSeeder con datos realistas
 - [x] Auth redirect a Filament login, Valet link configurado
-- [x] Pint ✅ — Pest ✅ 2 passed — Build ✅
+- [x] Pint ✅ — Pest ✅ 37 passed — Build ✅
 
-### ⬜ PENDIENTE
-- [ ] Tests reales con Pest (rutas, controllers, seeders)
-- [ ] Implementar lógica real en los 9 Jobs (los TODOs están en el código)
-- [ ] Primer agente funcional: InfraReliabilityAgentJob
-- [ ] WebSockets con Reverb — dashboard en tiempo real
-- [ ] Telegram Bot configurado con grupos separados
-- [ ] Infra AWS levantada (EC2 + RDS + ElastiCache + S3 + Secrets Manager)
-- [ ] Umami + Prometheus + Grafana + Sentry + Uptime Kuma instalados
-- [ ] Playwright + Lighthouse CI configurados
-- [ ] Sistema de Leads activado (código existe, falta integración con activos reales)
+### ✅ COMPLETADO — Tests (MDC21-03)
+- [x] 37 tests Pest con 159 assertions
+- [x] Tests de rutas (7 páginas auth + guest redirect)
+- [x] Tests Dashboard (props, stats reales, aprobaciones)
+- [x] Tests AgentRuns (props, filtro por tipo, filtro por estado)
+- [x] Tests Approval (approve, deny, audit trail)
+- [x] Tests InfraReliability (DB, Redis, disco, cache)
+- [x] Tests PolicyBrand (approve, reject, N3, scope, privacy)
+- [x] Tests ScoreComposite (cálculo, clasificación, alertas)
+- [x] Tests BaseAgentJob (ejecución, fallo, output, metadata)
+- [x] phpunit.xml con PostgreSQL (c2_testing), `withoutVite()` para CI
+
+### ✅ COMPLETADO — Agentes + Scheduler + Services (MDC21-04/05)
+- [x] **InfraReliabilityAgentJob** — DB health, Redis, colas, disco, uptime activos
+- [x] **PolicyBrandAgentJob** — Claude Haiku + fallback rule-based, crea N3 si rechaza
+- [x] **OrchestratorAgentJob** — ScoreComposite + alertas + clasificación N1/N2/N3
+- [x] **SeoContentAgentJob** — keywords + artículos + policy validation + guarda en blog_posts
+- [x] **DistributionAgentJob** — LinkedIn/Twitter/newsletter + policy + siempre N3
+- [x] **EngagementRetentionAgentJob** — newsletter/FAQ/drip/PDF/A/B test
+- [x] **MonetizationLeadsAgentJob** — scoring (≥70 auto, 40-70 N3, <40 descarte)
+- [x] **BuildReleaseAgentJob** — config + Pint + Pest + staging auto / producción N3
+- [x] **QAExperimentationAgentJob** — Pest + Pint + performance + A/B evaluation
+- [x] Todos con fallback funcional sin API keys (template-based)
+- [x] Scheduler: Orchestrator 2x/día (05:00/17:00) + InfraReliability hourly + quick 15min
+- [x] `TelegramService` — send/infraAlert/contentNotify/businessNotify/approvalNeeded (listo para token)
+- [x] `PolicySeeder` — 9 policies (5 globales + 4 por activo)
+- [x] Migración fix: `activity_log` causer_id/subject_id bigint → uuid
+- [x] Audit trail reactivado en ApprovalController
+
+### ✅ COMPLETADO — WebSockets (MDC21-06)
+- [x] Laravel Echo + Pusher.js instalados
+- [x] Reverb keys configuradas en `.env`
+- [x] 3 Events broadcast: `AgentRunUpdated`, `ApprovalCreated`, `InfraStatusUpdated`
+- [x] BaseAgentJob dispara broadcast en completed/failed automáticamente
+- [x] Canal público `c2-dashboard` para todos los eventos
+- [x] Composable `useRealtimeDashboard` — escucha eventos y refresca Inertia props
+- [x] Dashboard conectado al composable (auto-refresh al recibir eventos)
+
+### ⬜ PENDIENTE — Necesita credenciales externas
+- [ ] API keys: `CLAUDE_API_KEY` + `OPENAI_API_KEY` → agentes con IA real
+- [ ] `TELEGRAM_BOT_TOKEN` + IDs de grupos → notificaciones activas
+- [ ] Levantar Reverb en producción (`php artisan reverb:start`)
+- [ ] Infra AWS (EC2 + RDS + ElastiCache + S3 + Secrets Manager)
+- [ ] Umami + Prometheus + Grafana + Sentry + Uptime Kuma
+- [ ] Playwright + Lighthouse CI reales
+- [ ] Sistema de Leads activado (código existe, oculto del sidebar)
 - [ ] Primer activo desplegado desde C2
 
 ---

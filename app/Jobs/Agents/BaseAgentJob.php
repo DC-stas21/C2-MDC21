@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Agents;
 
+use App\Events\AgentRunUpdated;
 use App\Models\AgentRun;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -40,12 +41,25 @@ abstract class BaseAgentJob implements ShouldQueue
                 'status' => 'completed',
                 'finished_at' => now(),
             ]);
+
+            AgentRunUpdated::dispatch(
+                $this->agentRun->id,
+                $this->agentRun->agent_type,
+                'completed'
+            );
         } catch (Throwable $e) {
             $this->agentRun->update([
                 'status' => 'failed',
                 'error' => $e->getMessage(),
                 'finished_at' => now(),
             ]);
+
+            AgentRunUpdated::dispatch(
+                $this->agentRun->id,
+                $this->agentRun->agent_type,
+                'failed',
+                $e->getMessage()
+            );
 
             Log::error("[{$this->agentType()}] Job failed", [
                 'agent_run_id' => $this->agentRun->id,

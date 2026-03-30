@@ -9,8 +9,10 @@ import ScoreGaugeChart from '@/Components/Charts/ScoreGaugeChart.vue';
 import AgentStatusGrid from '@/Components/AgentStatusGrid.vue';
 import ActivityTimeline from '@/Components/ActivityTimeline.vue';
 import ApprovalRow from '@/Components/ApprovalRow.vue';
+import { useRealtimeDashboard } from '@/composables/useRealtimeDashboard';
 
 const { t } = useI18n();
+const { lastAgentEvent, isConnected, eventCount } = useRealtimeDashboard();
 
 const props = defineProps<{
     stats: {
