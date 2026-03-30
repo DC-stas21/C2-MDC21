@@ -490,18 +490,6 @@ Dashboard · Agentes · Aprobaciones · Activos · Contenido
 
 ---
 
-## SEEDERS DE DESARROLLO
-
-```bash
-php artisan db:seed --class=DemoSeeder      # Nichos + scores + agent_runs + aprobaciones + leads
-php artisan db:seed --class=ContentSeeder    # 11 artículos de prueba
-```
-
-- **DemoSeeder**: 5 nichos con scores en Redis, 7 días de agent_runs (8-18/día), 12 aprobaciones, 35 leads
-- **ContentSeeder**: 11 blog posts distribuidos en 4 activos con status variados
-
----
-
 ## CONVENCIONES DEL PROYECTO
 
 | Área | Convención |
