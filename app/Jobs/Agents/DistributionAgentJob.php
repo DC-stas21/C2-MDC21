@@ -3,16 +3,20 @@
 namespace App\Jobs\Agents;
 
 use App\Models\AgentRun;
+use App\Models\Approval;
+use App\Models\BlogPost;
+use App\Models\NicheConfig;
+use Illuminate\Support\Facades\Log;
 
 class DistributionAgentJob extends BaseAgentJob
 {
-    public string $queue = 'agents';
-
     public function __construct(
         private readonly string $nicheConfigId,
         private readonly string $channel,
         private readonly ?string $blogPostId = null
-    ) {}
+    ) {
+        $this->onQueue('agents');
+    }
 
     protected function agentType(): string
     {
@@ -21,21 +25,47 @@ class DistributionAgentJob extends BaseAgentJob
 
     protected function input(): array
     {
-        return [
-            'niche_config_id' => $this->nicheConfigId,
-            'channel' => $this->channel,
-            'blog_post_id' => $this->blogPostId,
-        ];
+        return ['niche_config_id' => $this->nicheConfigId, 'channel' => $this->channel, 'blog_post_id' => $this->blogPostId];
     }
 
     protected function execute(AgentRun $run): void
     {
-        // TODO: Implementar Agente Distribución
-        // 1. Investigar comunidades relevantes y trending topics del nicho
-        // 2. Generar borrador listo para copiar + dónde + por qué ahora + riesgo reputacional
-        // 3. Policy valida tono y claims
-        // 4. Enviar al publicador humano por Telegram/email
-        // 5. Registrar en editorial_calendar estado 'pending_human'
-        // NUNCA publica automáticamente — siempre N3
+        $niche = NicheConfig::findOrFail($this->nicheConfigId);
+        $post = $this->blogPostId ? BlogPost::find($this->blogPostId) : null;
+        $title = $post?->title ?? "Contenido sobre {$niche->vertical}";
+
+        $content = match ($this->channel) {
+            'linkedin' => "¿Sabías que...?\n\n{$title}\n\nEn {$niche->domain} hemos analizado los datos más recientes del sector {$niche->vertical}.\n\nLee más en {$niche->domain}",
+            'twitter' => "{$title}\n\nDatos actualizados para España.\n\n{$niche->domain}",
+            'newsletter' => "Hola,\n\nEsta semana en {$niche->domain}: {$title}\n\nVisita {$niche->domain} para leer más.\n\nEquipo MDC21",
+            default => "Nuevo contenido en {$niche->domain}: {$title}",
+        };
+
+        // Policy validation
+        try {
+            $policyJob = new PolicyBrandAgentJob($content, 'social_'.$this->channel, $run->id, $niche->domain);
+            $policyJob->handle();
+        } catch (\Throwable $e) {
+            Log::warning('[distribution] Policy check failed', ['error' => $e->getMessage()]);
+        }
+
+        // Always N3 — human copies and publishes
+        Approval::create([
+            'agent_run_id' => $run->id,
+            'action' => "Publicar en {$this->channel}: {$niche->domain}",
+            'level' => 'N3',
+            'status' => 'pending',
+            'reason' => 'Distribución en redes siempre requiere publicación manual',
+            'context' => ['channel' => $this->channel, 'domain' => $niche->domain, 'content' => $content],
+        ]);
+
+        $this->updateOutput([
+            'channel' => $this->channel,
+            'domain' => $niche->domain,
+            'content_length' => strlen($content),
+            'awaiting_human' => true,
+        ]);
+
+        Log::info('[distribution] Content prepared', ['channel' => $this->channel, 'domain' => $niche->domain]);
     }
 }

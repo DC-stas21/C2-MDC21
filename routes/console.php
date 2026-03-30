@@ -1,31 +1,44 @@
 <?php
 
 use App\Jobs\Agents\InfraReliabilityAgentJob;
+use App\Jobs\Agents\OrchestratorAgentJob;
 use Illuminate\Support\Facades\Schedule;
 
 /*
 |--------------------------------------------------------------------------
-| Agent Scheduler
+| Agent Scheduler — C2 MDC21
 |--------------------------------------------------------------------------
-| Todos los agentes se ejecutan como Jobs en cola.
-| El Scheduler los despacha según su frecuencia definida.
 |
 | Capa 0 — Núcleo
-|   OrchestratorAgentJob: cada 12h (pendiente API keys)
+|   Orchestrator:       cada 12h (05:00 y 17:00)
 |
 | Capa 2 — Operativos
-|   InfraReliabilityAgentJob: cada hora
+|   InfraReliability:   full cada hora, quick cada 15min
+|
+| Capa 1 — Funcionales (SEO, Distribution, Engagement, Monetization)
+|   Se disparan bajo demanda o encadenados por el Orchestrator.
+|   No se programan en el scheduler porque dependen del contexto
+|   (qué activo, qué canal, qué tarea).
+|
+| Capa 2 — Build & Release, QA
+|   Se disparan automáticamente tras deploys o por el Orchestrator.
 |
 */
 
-// Infra & Reliability — check completo cada hora
+// === CAPA 0: Orquestador — ciclo 12h ===
+Schedule::job(new OrchestratorAgentJob)
+    ->twiceDaily(5, 17)
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->name('orchestrator-12h');
+
+// === CAPA 2: Infra & Reliability ===
 Schedule::job(new InfraReliabilityAgentJob('full'))
     ->hourly()
     ->withoutOverlapping()
     ->onOneServer()
     ->name('infra-reliability-hourly');
 
-// Infra & Reliability — check rápido cada 15 minutos (solo DB + Redis, sin HTTP a activos)
 Schedule::job(new InfraReliabilityAgentJob('quick'))
     ->everyFifteenMinutes()
     ->withoutOverlapping()
