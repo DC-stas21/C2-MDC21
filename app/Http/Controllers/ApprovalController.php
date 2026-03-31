@@ -58,6 +58,21 @@ class ApprovalController extends Controller
             ->withProperties(['action' => 'approved', 'note' => $request->input('note')])
             ->log('Approval approved');
 
+        // If this is a production deploy approval, deploy and mark as live
+        $domain = $approval->context['domain'] ?? null;
+        if ($domain && str_contains($approval->action, 'Deploy a producción')) {
+            $niche = NicheConfig::where('domain', $domain)->first();
+            if ($niche && $niche->build_status === NicheConfig::STATUS_STAGING) {
+                $niche->update([
+                    'build_status' => NicheConfig::STATUS_LIVE,
+                    'build_metadata' => array_merge($niche->build_metadata ?? [], [
+                        'deployed_at' => now()->toIso8601String(),
+                        'approved_by' => $request->user()?->id,
+                    ]),
+                ]);
+            }
+        }
+
         return back()->with('success', 'Aprobado correctamente.');
     }
 
