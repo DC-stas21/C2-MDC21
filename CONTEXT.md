@@ -2,7 +2,7 @@
 
 > Pega este archivo completo al inicio de cualquier chat de IA antes de escribir código.
 > La IA debe leerlo completo y confirmar que lo ha entendido antes de empezar.
-> Versión: 4.0 · Fecha: Marzo 2026 · Estado: CÓDIGO COMPLETO — Solo falta infra + credenciales
+> Versión: 4.1 · Fecha: Marzo 2026 · Estado: CÓDIGO COMPLETO — Pipeline testeado en local, solo falta infra + credenciales
 
 ---
 
@@ -644,6 +644,19 @@ Template web incluye:
 - [x] PromptVersionResource: 8 agentes en dropdown/filtros/badges
 - [x] Filament: campo estilo visual (modern_clean/bold_gradient/corporate)
 - [x] 52 tests, 210 assertions, CI verde
+
+### ✅ COMPLETADO — Feedback Loop + Deploy (MDC21-18 a 22)
+- [x] Sites path local: `storage/app/sites/{domain}/` en dev, `/var/www/{domain}/` en producción
+- [x] Nginx skip en local (isAvailable() = false cuando APP_ENV != production)
+- [x] Horizon config: colas agents + agents-ops
+- [x] Pipeline testeado end-to-end en local: WebBuilder → PolicyBrand → QA → BuildRelease
+- [x] Aprobar deploy: local → live directo, producción → Nginx + SSL + health check
+- [x] Health check en producción: HTTP GET + verifica body > 100 bytes
+- [x] Si health check falla → build_status = failed + N3 con detalles
+- [x] **Feedback loop**: al denegar un deploy, feedback obligatorio se guarda y re-dispara WebBuilder
+- [x] WebBuilder incluye feedback del socio en el prompt de Claude para regenerar
+- [x] Link "Ver preview" en aprobaciones de deploy
+- [x] El pipeline se repite hasta que el socio apruebe
 
 ### ⬜ PENDIENTE — Solo necesita infra + credenciales
 - [ ] Servidor AWS (EC2) con Nginx + PostgreSQL + Redis + Laravel Forge
