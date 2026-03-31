@@ -33,6 +33,19 @@ class OrchestratorAgentJob extends BaseAgentJob
     {
         $scoreComposite = app(ScoreComposite::class);
 
+        // 1. Detect assets pending build → dispatch WebBuilder
+        $pendingAssets = NicheConfig::where('is_active', true)
+            ->where('build_status', NicheConfig::STATUS_PENDING)
+            ->get();
+
+        $buildsDispatched = 0;
+        foreach ($pendingAssets as $pending) {
+            WebBuilderAgentJob::dispatch($pending->id);
+            $buildsDispatched++;
+            Log::info('[orchestrator] Dispatched WebBuilder for new asset', ['domain' => $pending->domain]);
+        }
+
+        // 2. Analyze active assets
         $assets = $this->assetIds
             ? NicheConfig::whereIn('id', $this->assetIds)->where('is_active', true)->get()
             : NicheConfig::where('is_active', true)->get();
@@ -92,6 +105,7 @@ class OrchestratorAgentJob extends BaseAgentJob
         ], 86400);
 
         $this->updateOutput([
+            'builds_dispatched' => $buildsDispatched,
             'assets_analyzed' => count($assetReports),
             'portfolio_avg_score' => $avgScore,
             'asset_reports' => $assetReports,

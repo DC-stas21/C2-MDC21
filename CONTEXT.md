@@ -2,7 +2,7 @@
 
 > Pega este archivo completo al inicio de cualquier chat de IA antes de escribir código.
 > La IA debe leerlo completo y confirmar que lo ha entendido antes de empezar.
-> Versión: 3.1 · Fecha: Marzo 2026 · Estado: EN DESARROLLO — Fábrica de webs completa, falta infra
+> Versión: 4.0 · Fecha: Marzo 2026 · Estado: CÓDIGO COMPLETO — Solo falta infra + credenciales
 
 ---
 
@@ -632,26 +632,26 @@ Template web incluye:
 - [x] Migración fix: activity_log causer_id/subject_id bigint → uuid
 - [x] Nginx stub en `stubs/nginx/site.conf.stub`
 
-### ⬜ PENDIENTE — Necesita credenciales/infra
-- [ ] API keys: `CLAUDE_API_KEY` + `OPENAI_API_KEY` → agentes con IA real
-- [ ] `ADSENSE_CLIENT_ID` → ads en las webs generadas
-- [ ] `TELEGRAM_BOT_TOKEN` + IDs de grupos → notificaciones
-- [ ] Servidor AWS (EC2) con Nginx + PostgreSQL + Redis
-- [ ] `php artisan horizon` + `php artisan reverb:start` en producción
-- [ ] Primer activo real: comprar dominio → DNS → crear en Filament → deploy
+### ✅ COMPLETADO — Dark Theme + Auth + Sincronización (MDC21-16/17)
+- [x] Login propio en C2 (`/login`) — dark, no redirect a Filament
+- [x] Dark theme completo en todo el frontend Inertia
+- [x] Navegación C2 ↔ Filament (sidebar → Config, Filament → Panel de Control)
+- [x] Filament dark mode forzado
+- [x] Logout en sidebar de C2
+- [x] Orchestrator detecta activos pending y dispara WebBuilder automáticamente
+- [x] types/index.d.ts sincronizado (sin modelos muertos, con build_status, web_builder)
+- [x] AgentRunController: 8 agentes con layers/models/queues correctos
+- [x] PromptVersionResource: 8 agentes en dropdown/filtros/badges
+- [x] Filament: campo estilo visual (modern_clean/bold_gradient/corporate)
+- [x] 52 tests, 210 assertions, CI verde
 
-### ✅ COMPLETADO — Limpieza + Pipeline + API (MDC21-14/15)
-- [x] Eliminados modelos muertos: BlogPost, Lead, Experiment, EditorialCalendar
-- [x] Eliminados agentes desactivados: EngagementRetention, MonetizationLeads
-- [x] Eliminados componentes/archivos muertos: ScoreGaugeChart, StatsCard, app.js, bootstrap.js
-- [x] Cadena de agentes completa: WebBuilder → PolicyBrand → QA(qa_web) → BuildRelease
-- [x] QA task `qa_web`: verifica dist/, index.html, config válido, HTTP check
-- [x] BuildRelease reescrito: deploy de webs con Nginx + SSL + staging/producción
-- [x] SeoContentAgent: inyecta artículos en site.config.json (no en tabla)
-- [x] ComparatorTool + CheckerTool en el template
-- [x] 7 verticales: Hipotecas, Energía, Seguros, Préstamos, Solar, Ciberseguridad, Contabilidad
-- [x] API endpoint `POST /api/leads` para recibir formularios de las webs
-- [x] 51 tests, 207 assertions
+### ⬜ PENDIENTE — Solo necesita infra + credenciales
+- [ ] Servidor AWS (EC2) con Nginx + PostgreSQL + Redis + Laravel Forge
+- [ ] API keys: `CLAUDE_API_KEY` + `OPENAI_API_KEY`
+- [ ] `ADSENSE_CLIENT_ID` para monetización con ads
+- [ ] `TELEGRAM_BOT_TOKEN` + IDs de 3 grupos
+- [ ] `php artisan horizon` + `php artisan reverb:start` en producción
+- [ ] Primer dominio real → DNS → crear activo en Filament → deploy
 
 ### ⬜ PENDIENTE — Código (próximas sesiones)
 - [ ] Analytics (Umami self-hosted)

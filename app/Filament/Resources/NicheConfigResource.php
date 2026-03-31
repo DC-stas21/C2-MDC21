@@ -103,17 +103,26 @@ class NicheConfigResource extends Resource
                 ]),
 
             Forms\Components\Section::make('Diseño')
-                ->description('Colores del activo')
+                ->description('Estilo visual de la web. Si lo dejas vacío, el agente elige automáticamente.')
                 ->collapsed()
                 ->schema([
+                    Forms\Components\Select::make('config.style')
+                        ->label('Estilo visual')
+                        ->options([
+                            'modern_clean' => 'Moderno y limpio (default)',
+                            'bold_gradient' => 'Gradientes e impacto visual',
+                            'corporate' => 'Corporativo y profesional',
+                        ])
+                        ->placeholder('El agente decide')
+                        ->helperText('El estilo que tendrá la web generada'),
                     Forms\Components\TextInput::make('colors.primary')
                         ->label('Color primario')
-                        ->placeholder('#4f46e5')
-                        ->helperText('Hex del color principal'),
+                        ->placeholder('Auto según vertical')
+                        ->helperText('Hex. Déjalo vacío para que el agente elija.'),
                     Forms\Components\TextInput::make('colors.secondary')
                         ->label('Color secundario')
-                        ->placeholder('#0ea5e9'),
-                ])->columns(2),
+                        ->placeholder('Auto según vertical'),
+                ])->columns(3),
         ]);
     }
 
