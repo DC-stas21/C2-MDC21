@@ -2,7 +2,7 @@
 
 > Pega este archivo completo al inicio de cualquier chat de IA antes de escribir código.
 > La IA debe leerlo completo y confirmar que lo ha entendido antes de empezar.
-> Versión: 2.0 · Fecha: Marzo 2026 · Estado: EN DESARROLLO — Reestructuración hacia fábrica de webs
+> Versión: 3.0 · Fecha: Marzo 2026 · Estado: EN DESARROLLO — Fábrica de webs funcional, falta infra
 
 ---
 
@@ -13,7 +13,7 @@
 **C2 NO es** un gestor de contenido ni un CMS. Es una plataforma que:
 - **Genera webs completas** a partir de un contexto (calculadoras, comparadores, herramientas verticales)
 - **Diseña automáticamente** (colores, tipografía, layout) según el vertical y tono
-- **Despliega y opera** las webs con 9 agentes de IA en background
+- **Despliega y opera** las webs con 8 agentes de IA en background
 - **Monitorea** rendimiento, uptime y métricas de todo el portafolio
 
 ### Flujo principal
@@ -565,82 +565,88 @@ Dashboard · Agentes · Aprobaciones · Activos · Contenido
 - [x] `config/services.php` — Claude, OpenAI, Telegram, Cloudflare, GitHub, SEMrush
 - [x] `AppServiceProvider` con singletons de todos los services
 
-### ✅ COMPLETADO — Frontend (MDC21-02)
-- [x] Inertia.js v3 server-side instalado + HandleInertiaRequests middleware
-- [x] `resources/views/app.blade.php` — blade entry point con `@inertia`
-- [x] `resources/js/Layouts/AppLayout.vue` — sidebar, topbar, responsive, flash messages
-- [x] Font Inter (tipografía profesional SaaS)
-- [x] Light theme profesional (paleta zinc, sin colores innecesarios)
-- [x] **Dashboard** — 5 métricas, grid 9 agentes interactivo (click → expandir), gráfica actividad ECharts, aprobaciones pendientes, score gauge, timeline actividad
-- [x] **Agentes** — perfiles por capa (Núcleo/Funcional/Operativo), métricas por agente (éxito, duración, errores), filtros combinables agente+estado, errores recientes, historial paginado
-- [x] **Aprobaciones** — barra urgencia, métricas (pendientes, resueltas, tiempo respuesta, ratio), tabs por estado, filtros por nivel N1/N2/N3 y agente, panel gobernanza, audit trail decisiones, barras resumen semanal
-- [x] **Activos** — métricas portafolio, toggle cards/tabla, detalle expandible por activo, score gauge, distribución salud
-- [x] **Contenido** — editorial board, métricas por estado, tabs, expandible con slug/fuentes/E-E-A-T/metodología, filtro por activo
-- [x] **Leads** — pipeline completo con filtros, tabla con score visual, revenue, donut chart *(página oculta del sidebar, código preservado para futuro)*
-- [x] 8 componentes Vue reutilizables (StatsCard, ApprovalRow, AgentStatusGrid, AgentProfileCard, ActivityTimeline, AgentActivityChart, ScoreGaugeChart, LeadsPieChart)
-- [x] 6 Controllers Inertia con datos ricos (stats, perfiles, filtros, métricas calculadas)
-- [x] i18n es/en completo con todas las claves (nav, dashboard, agents, approvals, assets, scores, common)
-- [x] DemoSeeder + ContentSeeder con datos realistas
-- [x] Auth redirect a Filament login, Valet link configurado
-- [x] Pint ✅ — Pest ✅ 37 passed — Build ✅
+### ✅ COMPLETADO — Panel de Control (MDC21-02 a MDC21-09)
+- [x] Inertia.js v3 + HandleInertiaRequests middleware + auth redirect a Filament login
+- [x] AppLayout con sidebar (Dashboard, Agentes, Aprobaciones, Webs), topbar, responsive
+- [x] Font Inter, light theme profesional (paleta zinc)
+- [x] **Dashboard** — métricas de webs (live/building/staging/failed), pipeline visual, 6 agentes core, gráfica ECharts, aprobaciones, timeline
+- [x] **Agentes** — perfiles por capa, métricas, filtros, errores, historial paginado
+- [x] **Aprobaciones** — urgencia, gobernanza N1/N2/N3, audit trail, filtros
+- [x] **Webs** — portafolio con build_status, detalle expandible
+- [x] 7 componentes Vue (StatsCard, ApprovalRow, AgentStatusGrid, AgentProfileCard, ActivityTimeline, AgentActivityChart, ScoreGaugeChart)
+- [x] 4 Controllers Inertia (Dashboard, AgentRun, Approval, NicheConfig)
+- [x] WebSockets: Laravel Echo + Reverb, 3 Events broadcast, composable useRealtimeDashboard
+- [x] i18n es/en, Filament limpio (solo Activos, Políticas, Prompts)
 
-### ✅ COMPLETADO — Tests (MDC21-03)
-- [x] 37 tests Pest con 159 assertions
-- [x] Tests de rutas (7 páginas auth + guest redirect)
-- [x] Tests Dashboard (props, stats reales, aprobaciones)
-- [x] Tests AgentRuns (props, filtro por tipo, filtro por estado)
-- [x] Tests Approval (approve, deny, audit trail)
-- [x] Tests InfraReliability (DB, Redis, disco, cache)
-- [x] Tests PolicyBrand (approve, reject, N3, scope, privacy)
-- [x] Tests ScoreComposite (cálculo, clasificación, alertas)
-- [x] Tests BaseAgentJob (ejecución, fallo, output, metadata)
-- [x] phpunit.xml con PostgreSQL (c2_testing), `withoutVite()` para CI
+### ✅ COMPLETADO — Agentes (MDC21-04/05/11)
+Pipeline de creación de webs (8 agentes activos):
+- [x] **OrchestratorAgentJob** — cada 12h, detecta activos nuevos, calcula scores, planifica
+- [x] **WebBuilderAgentJob** — genera site.config.json → copia template → npm build → Nginx
+- [x] **PolicyBrandAgentJob** — Claude Haiku + fallback rule-based, valida contenido
+- [x] **QAExperimentationAgentJob** — Pest + Pint + performance check
+- [x] **BuildReleaseAgentJob** — staging auto / producción N3
+- [x] **InfraReliabilityAgentJob** — DB, Redis, disco, uptime webs, cada hora
+- [x] **SeoContentAgentJob** — genera artículos SEO (post-lanzamiento)
+- [x] **DistributionAgentJob** — prepara posts redes, siempre N3 (post-lanzamiento)
+- [x] Agentes Engagement y Monetization existen pero desactivados (futuro)
+- [x] Scheduler: Orchestrator 2x/día + InfraReliability hourly + quick 15min
+- [x] BaseAgentJob con broadcast automático (WebSockets)
 
-### ✅ COMPLETADO — Agentes + Scheduler + Services (MDC21-04/05)
-- [x] **InfraReliabilityAgentJob** — DB health, Redis, colas, disco, uptime activos
-- [x] **PolicyBrandAgentJob** — Claude Haiku + fallback rule-based, crea N3 si rechaza
-- [x] **OrchestratorAgentJob** — ScoreComposite + alertas + clasificación N1/N2/N3
-- [x] **SeoContentAgentJob** — keywords + artículos + policy validation + guarda en blog_posts
-- [x] **DistributionAgentJob** — LinkedIn/Twitter/newsletter + policy + siempre N3
-- [x] **EngagementRetentionAgentJob** — newsletter/FAQ/drip/PDF/A/B test
-- [x] **MonetizationLeadsAgentJob** — scoring (≥70 auto, 40-70 N3, <40 descarte)
-- [x] **BuildReleaseAgentJob** — config + Pint + Pest + staging auto / producción N3
-- [x] **QAExperimentationAgentJob** — Pest + Pint + performance + A/B evaluation
-- [x] Todos con fallback funcional sin API keys (template-based)
-- [x] Scheduler: Orchestrator 2x/día (05:00/17:00) + InfraReliability hourly + quick 15min
-- [x] `TelegramService` — send/infraAlert/contentNotify/businessNotify/approvalNeeded (listo para token)
-- [x] `PolicySeeder` — 9 policies (5 globales + 4 por activo)
-- [x] Migración fix: `activity_log` causer_id/subject_id bigint → uuid
-- [x] Audit trail reactivado en ApprovalController
+### ✅ COMPLETADO — Fábrica de Webs (MDC21-11/12)
+- [x] Template Vue base (`stubs/web-template/`) — app standalone Vue 3 + Vite 7 + Tailwind 4
+- [x] site.config.json como motor: diseño, páginas, herramientas, contenido, SEO, ads, blog
+- [x] `WebConfigTemplateService` — genera configs completos por vertical sin API key
+- [x] `NginxConfigService` — auto-config dominio + SSL con certbot
+- [x] `AssetSetupService` — auto-crea políticas + prompts + dispara WebBuilder
+- [x] Formulario Filament: contexto rico, build_status badge, botón Reconstruir
+- [x] Migración: build_status (pending/building/staging/live/failed) + build_metadata
 
-### ✅ COMPLETADO — WebSockets (MDC21-06)
-- [x] Laravel Echo + Pusher.js instalados
-- [x] Reverb keys configuradas en `.env`
-- [x] 3 Events broadcast: `AgentRunUpdated`, `ApprovalCreated`, `InfraStatusUpdated`
-- [x] BaseAgentJob dispara broadcast en completed/failed automáticamente
-- [x] Canal público `c2-dashboard` para todos los eventos
-- [x] Composable `useRealtimeDashboard` — escucha eventos y refresca Inertia props
-- [x] Dashboard conectado al composable (auto-refresh al recibir eventos)
+Template web incluye:
+- [x] DynamicPage — renderiza cualquier página desde config.pages[].sections[]
+- [x] Componentes: Hero, Features, FAQ, CTA, Content, Header, Footer, CookieConsent
+- [x] CalculatorTool con 4 fórmulas (hipoteca francesa, ahorro energía, TAE, ROI solar)
+- [x] LeadFormTool (preparado para futuro)
+- [x] Blog: BlogListPage + BlogArticlePage con fuentes y disclaimer
+- [x] AdSense auto ads (useAdsense.ts, inyecta desde config.ads.adsense_id)
+- [x] SEO: useSeo.ts (meta tags, OG, canonical, Schema JSON-LD: WebSite, FAQPage, SoftwareApplication)
+- [x] sitemap.xml + robots.txt generados automáticamente en el build
+- [x] Cookie consent RGPD
+- [x] 3 variantes de estilo: modern_clean, bold_gradient, corporate
+- [x] Router dinámico + tema dinámico via CSS custom properties
 
-### ✅ COMPLETADO — Auto-setup de activos (MDC21-10)
-- [x] `AssetSetupService` — auto-crea políticas + prompts al crear activo
-- [x] Formulario Filament rediseñado: contexto rico (descripción, audiencia, tono, keywords)
-- [x] Hook afterCreate: setup automático al crear activo en Filament
-- [x] Filament limpio: solo 3 recursos de configuración (Activos, Políticas, Prompts)
-- [x] CPL/Leads removido del formulario (sistema de leads para futuro)
+### ✅ COMPLETADO — Tests + CI (MDC21-03/07)
+- [x] 44 tests Pest, 195 assertions
+- [x] Tests: rutas, dashboard, agentes, aprobaciones, InfraReliability, PolicyBrand, ScoreComposite, BaseAgentJob, AssetSetup, WebBuilder
+- [x] phpunit.xml con PostgreSQL (c2_testing), withoutVite() para CI
+- [x] GitHub Actions CI verde (Pint → Pest)
 
-### ⬜ PRÓXIMA SESIÓN — Fábrica de webs
-- [ ] **Template base de web** (Laravel + Vue) que se clona y personaliza
-- [ ] **Web Builder Agent** — el agente principal que genera la web completa
-- [ ] **Pipeline**: crear activo → generar diseño → generar páginas → generar contenido → policy → QA → deploy
-- [ ] Reestructurar agentes para girar en torno a construcción de webs
-- [ ] Nginx auto-config por dominio en el servidor
+### ✅ COMPLETADO — Services + Infra code
+- [x] `ClaudeService` — message + batch + Prompt Caching
+- [x] `ChatGPTService` — message + batch + polling
+- [x] `RateLimiterService` — rate limiting por provider
+- [x] `PromptRegistry` — prompts activos desde DB con cache Redis
+- [x] `ScoreComposite` — score 0-100 con 6 dimensiones ponderadas
+- [x] `TelegramService` — listo para token (send, infraAlert, contentNotify, approvalNeeded)
+- [x] `WebConfigTemplateService` — genera configs por vertical
+- [x] `NginxConfigService` — deploy + SSL + rollback
+- [x] Migración fix: activity_log causer_id/subject_id bigint → uuid
+- [x] Nginx stub en `stubs/nginx/site.conf.stub`
 
-### ⬜ PENDIENTE — Necesita credenciales externas
+### ⬜ PENDIENTE — Necesita credenciales/infra
 - [ ] API keys: `CLAUDE_API_KEY` + `OPENAI_API_KEY` → agentes con IA real
-- [ ] `TELEGRAM_BOT_TOKEN` + IDs de grupos → notificaciones activas
-- [ ] Infra servidor (EC2 o VPS) con Nginx + PostgreSQL + Redis
-- [ ] Sistema de Leads activado (código existe, oculto del sidebar)
+- [ ] `ADSENSE_CLIENT_ID` → ads en las webs generadas
+- [ ] `TELEGRAM_BOT_TOKEN` + IDs de grupos → notificaciones
+- [ ] Servidor AWS (EC2) con Nginx + PostgreSQL + Redis
+- [ ] `php artisan horizon` + `php artisan reverb:start` en producción
+- [ ] Primer activo real: comprar dominio → DNS → crear en Filament → deploy
+
+### ⬜ PENDIENTE — Código (próximas sesiones)
+- [ ] ComparatorTool + CheckerTool en el template
+- [ ] API endpoint POST /api/leads en C2
+- [ ] Analytics (Umami self-hosted)
+- [ ] Playwright + Lighthouse CI reales en QA agent
+- [ ] Conectar Forge para deploys reales en BuildRelease agent
+- [ ] CONTEXT.md: documentar estructura de carpetas actualizada
 
 ---
 
