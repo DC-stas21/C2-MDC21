@@ -95,10 +95,15 @@ class NginxConfigService
     }
 
     /**
-     * Check if Nginx is available (for local dev vs production).
+     * Check if Nginx is available and we have permissions (production only).
      */
     public function isAvailable(): bool
     {
+        // In local dev, skip Nginx entirely
+        if (! app()->environment('production')) {
+            return false;
+        }
+
         try {
             $result = Process::run('which nginx 2>/dev/null');
 
