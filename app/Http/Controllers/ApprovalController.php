@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\Agents\BuildReleaseAgentJob;
 use App\Jobs\Agents\WebBuilderAgentJob;
 use App\Models\Approval;
+use App\Models\NicheConfig;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
