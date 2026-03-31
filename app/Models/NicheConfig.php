@@ -58,12 +58,16 @@ class NicheConfig extends Model
 
     public function siteConfigPath(): string
     {
-        return "/var/www/{$this->domain}/site.config.json";
+        return $this->sitePath().'/site.config.json';
     }
 
     public function sitePath(): string
     {
-        return "/var/www/{$this->domain}";
+        if (app()->environment('production')) {
+            return "/var/www/{$this->domain}";
+        }
+
+        return storage_path("app/sites/{$this->domain}");
     }
 
     public function siteUrl(): string
