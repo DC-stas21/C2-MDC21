@@ -20,7 +20,7 @@ test('agent runs page returns correct inertia props', function () {
         ->component('AgentRuns/Index')
         ->has('runs')
         ->has('globalStats')
-        ->has('agentProfiles', 9)
+        ->has('agentProfiles', 8)
         ->has('dailyActivity')
         ->has('recentErrors')
     );

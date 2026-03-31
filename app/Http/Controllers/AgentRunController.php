@@ -10,34 +10,31 @@ use Inertia\Response;
 class AgentRunController extends Controller
 {
     private const AGENT_TYPES = [
-        'orchestrator', 'policy_brand', 'seo_content', 'distribution',
-        'engagement_retention', 'monetization_leads', 'build_release',
-        'infra_reliability', 'qa_experimentation',
+        'orchestrator', 'web_builder', 'policy_brand', 'seo_content',
+        'distribution', 'build_release', 'infra_reliability', 'qa_experimentation',
     ];
 
     private const AGENT_LAYERS = [
-        'orchestrator' => 0, 'policy_brand' => 0,
+        'orchestrator' => 0, 'web_builder' => 1, 'policy_brand' => 0,
         'seo_content' => 1, 'distribution' => 1,
-        'engagement_retention' => 1, 'monetization_leads' => 1,
         'build_release' => 2, 'infra_reliability' => 2, 'qa_experimentation' => 2,
     ];
 
     private const AGENT_MODELS = [
-        'orchestrator' => 'Claude Sonnet Batch',
+        'orchestrator' => 'Claude Sonnet',
+        'web_builder' => 'Claude Sonnet',
         'policy_brand' => 'Claude Haiku',
         'seo_content' => 'GPT-4o + GPT-4o-mini',
         'distribution' => 'Claude Sonnet + GPT-4o',
-        'engagement_retention' => 'GPT-4o-mini Batch',
-        'monetization_leads' => 'Claude Sonnet + GPT-4o',
         'build_release' => 'Script (sin IA)',
         'infra_reliability' => 'Script (sin IA)',
-        'qa_experimentation' => 'Playwright + Lighthouse + Pest',
+        'qa_experimentation' => 'Pest + Lighthouse',
     ];
 
     private const AGENT_QUEUES = [
-        'orchestrator' => 'agents', 'policy_brand' => 'agents',
-        'seo_content' => 'agents', 'distribution' => 'agents',
-        'engagement_retention' => 'agents', 'monetization_leads' => 'agents',
+        'orchestrator' => 'agents', 'web_builder' => 'agents-ops',
+        'policy_brand' => 'agents', 'seo_content' => 'agents',
+        'distribution' => 'agents',
         'build_release' => 'agents-ops', 'infra_reliability' => 'agents-ops',
         'qa_experimentation' => 'agents-ops',
     ];

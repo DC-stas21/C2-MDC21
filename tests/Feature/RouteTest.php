@@ -3,10 +3,26 @@
 use App\Models\User;
 
 test('guest is redirected to login', function () {
-    $this->get('/')->assertRedirect('/admin/login');
-    $this->get('/agent-runs')->assertRedirect('/admin/login');
-    $this->get('/approvals')->assertRedirect('/admin/login');
-    $this->get('/assets')->assertRedirect('/admin/login');
+    $this->get('/')->assertRedirect('/login');
+    $this->get('/agent-runs')->assertRedirect('/login');
+    $this->get('/approvals')->assertRedirect('/login');
+    $this->get('/assets')->assertRedirect('/login');
+});
+
+test('login page loads', function () {
+    $this->get('/login')->assertStatus(200);
+});
+
+test('user can login', function () {
+    $user = User::factory()->create(['password' => bcrypt('password')]);
+
+    $this->post('/login', ['email' => $user->email, 'password' => 'password'])
+        ->assertRedirect('/');
+});
+
+test('invalid credentials are rejected', function () {
+    $this->post('/login', ['email' => 'fake@test.com', 'password' => 'wrong'])
+        ->assertSessionHasErrors('email');
 });
 
 test('dashboard loads for authenticated user', function () {

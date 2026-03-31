@@ -37,11 +37,13 @@ class PromptVersionResource extends Resource
                         ->required()
                         ->options([
                             'orchestrator' => 'Orquestador General',
+                            'web_builder' => 'Web Builder',
                             'policy_brand' => 'Policy & Brand',
                             'seo_content' => 'SEO & Contenido',
                             'distribution' => 'Distribución',
-                            'engagement_retention' => 'Engagement & Retención',
-                            'monetization_leads' => 'Monetización & Leads',
+                            'qa_experimentation' => 'QA & Testing',
+                            'build_release' => 'Build & Release',
+                            'infra_reliability' => 'Infra & Monitoreo',
                         ]),
                     Forms\Components\TextInput::make('version')
                         ->label('Versión')
@@ -82,11 +84,13 @@ class PromptVersionResource extends Resource
                 Tables\Columns\TextColumn::make('agent_type')->label('Agente')->badge()
                     ->formatStateUsing(fn (string $state) => match ($state) {
                         'orchestrator' => 'Orquestador',
+                        'web_builder' => 'Web Builder',
                         'policy_brand' => 'Policy',
                         'seo_content' => 'SEO',
                         'distribution' => 'Distribución',
-                        'engagement_retention' => 'Engagement',
-                        'monetization_leads' => 'Monetización',
+                        'qa_experimentation' => 'QA',
+                        'build_release' => 'Build',
+                        'infra_reliability' => 'Infra',
                         default => $state,
                     })->sortable(),
                 Tables\Columns\TextColumn::make('version')->label('v')->sortable(),
@@ -100,11 +104,13 @@ class PromptVersionResource extends Resource
                 Tables\Filters\SelectFilter::make('agent_type')->label('Agente')
                     ->options([
                         'orchestrator' => 'Orquestador',
+                        'web_builder' => 'Web Builder',
                         'policy_brand' => 'Policy',
                         'seo_content' => 'SEO',
                         'distribution' => 'Distribución',
-                        'engagement_retention' => 'Engagement',
-                        'monetization_leads' => 'Monetización',
+                        'qa_experimentation' => 'QA',
+                        'build_release' => 'Build',
+                        'infra_reliability' => 'Infra',
                     ]),
                 Tables\Filters\TernaryFilter::make('is_active'),
             ])

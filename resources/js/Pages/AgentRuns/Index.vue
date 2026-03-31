@@ -107,44 +107,44 @@ const profilesByLayer = computed(() => {
 <template>
     <AppLayout>
         <template #header>
-            <h1 class="text-[14px] font-medium text-[#09090b]">{{ t('nav.agents') }}</h1>
+            <h1 class="text-[14px] font-medium text-[#fafafa]">{{ t('nav.agents') }}</h1>
         </template>
 
         <!-- ===== GLOBAL METRICS ===== -->
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Ejecutando</p>
-                <p class="mt-1 text-[22px] font-semibold text-[#09090b]">{{ globalStats.running }}</p>
+                <p class="mt-1 text-[22px] font-semibold text-[#fafafa]">{{ globalStats.running }}</p>
             </div>
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">En cola</p>
-                <p class="mt-1 text-[22px] font-semibold text-[#09090b]">{{ globalStats.pending }}</p>
+                <p class="mt-1 text-[22px] font-semibold text-[#fafafa]">{{ globalStats.pending }}</p>
             </div>
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Completados hoy</p>
                 <p class="mt-1 text-[22px] font-semibold text-emerald-600">{{ globalStats.completed_today }}</p>
             </div>
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Fallidos hoy</p>
-                <p class="mt-1 text-[22px] font-semibold" :class="globalStats.failed_today > 0 ? 'text-red-600' : 'text-[#09090b]'">{{ globalStats.failed_today }}</p>
+                <p class="mt-1 text-[22px] font-semibold" :class="globalStats.failed_today > 0 ? 'text-red-400' : 'text-[#fafafa]'">{{ globalStats.failed_today }}</p>
             </div>
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Tasa éxito</p>
-                <p class="mt-1 text-[22px] font-semibold" :class="globalStats.success_rate !== null && globalStats.success_rate >= 90 ? 'text-emerald-600' : 'text-[#09090b]'">
+                <p class="mt-1 text-[22px] font-semibold" :class="globalStats.success_rate !== null && globalStats.success_rate >= 90 ? 'text-emerald-600' : 'text-[#fafafa]'">
                     {{ globalStats.success_rate !== null ? `${globalStats.success_rate}%` : '—' }}
                 </p>
                 <p class="text-[11px] text-[#a1a1aa]">últimos 7 días</p>
             </div>
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Duración media</p>
-                <p class="mt-1 font-mono text-[20px] font-semibold text-[#09090b]">{{ fmtSec(globalStats.avg_duration) }}</p>
+                <p class="mt-1 font-mono text-[20px] font-semibold text-[#fafafa]">{{ fmtSec(globalStats.avg_duration) }}</p>
                 <p class="text-[11px] text-[#a1a1aa]">{{ globalStats.total_week }} ejecuciones/sem</p>
             </div>
         </div>
 
         <!-- ===== AGENT PROFILES ===== -->
         <div class="mt-6">
-            <button class="flex items-center gap-1.5 text-[13px] font-medium text-[#09090b]" @click="showProfiles = !showProfiles">
+            <button class="flex items-center gap-1.5 text-[13px] font-medium text-[#fafafa]" @click="showProfiles = !showProfiles">
                 <svg :class="['h-3 w-3 text-[#a1a1aa] transition-transform', showProfiles ? 'rotate-90' : '']" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
@@ -170,24 +170,24 @@ const profilesByLayer = computed(() => {
 
         <!-- ===== CHART + ERRORS ===== -->
         <div class="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-12">
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-5 py-4 lg:col-span-8">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-5 py-4 lg:col-span-8">
                 <div class="mb-3 flex items-center justify-between">
                     <div>
-                        <h3 class="text-[13px] font-medium text-[#09090b]">Actividad semanal</h3>
+                        <h3 class="text-[13px] font-medium text-[#fafafa]">Actividad semanal</h3>
                         <p class="text-[11px] text-[#a1a1aa]">Ejecuciones totales por día y estado</p>
                     </div>
-                    <span class="rounded-md border border-[#e4e4e7] px-2 py-0.5 text-[11px] font-medium text-[#71717a]">{{ globalStats.total_week }} total</span>
+                    <span class="rounded-md border border-[#1f1f23] px-2 py-0.5 text-[11px] font-medium text-[#a1a1aa]">{{ globalStats.total_week }} total</span>
                 </div>
                 <AgentActivityChart :data="dailyActivity" />
             </div>
 
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-5 py-4 lg:col-span-4">
-                <h3 class="mb-3 text-[13px] font-medium text-[#09090b]">Errores recientes</h3>
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-5 py-4 lg:col-span-4">
+                <h3 class="mb-3 text-[13px] font-medium text-[#fafafa]">Errores recientes</h3>
                 <div v-if="recentErrors.length === 0" class="py-6 text-center text-[13px] text-[#a1a1aa]">Sin errores recientes</div>
                 <div v-else class="space-y-0">
                     <div v-for="err in recentErrors" :key="err.id" class="border-b border-[#f4f4f5] py-2.5 last:border-0">
                         <div class="flex items-center justify-between">
-                            <span class="text-[12px] font-medium text-[#09090b]">{{ t(`agents.${err.agent_type}`) }}</span>
+                            <span class="text-[12px] font-medium text-[#fafafa]">{{ t(`agents.${err.agent_type}`) }}</span>
                             <span class="text-[11px] text-[#a1a1aa]">{{ timeAgo(err.started_at) }}</span>
                         </div>
                         <p class="mt-0.5 truncate text-[11px] text-red-500">{{ err.error }}</p>
@@ -205,7 +205,7 @@ const profilesByLayer = computed(() => {
                             'h-2.5 w-2.5 rounded-full',
                             selectedProfile.is_running ? 'animate-pulse bg-indigo-400' :
                             selectedProfile.last_status === 'completed' ? 'bg-emerald-400' :
-                            selectedProfile.last_status === 'failed' ? 'bg-red-400' : 'bg-gray-500',
+                            selectedProfile.last_status === 'failed' ? 'bg-red-400' : 'bg-[#1f1f23]0',
                         ]"
                     />
                     <span class="text-[14px] font-semibold">{{ t(`agents.${selectedProfile.type}`) }}</span>
@@ -225,7 +225,7 @@ const profilesByLayer = computed(() => {
         <div class="mt-5">
             <div class="mb-3 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <h3 class="text-[13px] font-medium text-[#09090b]">
+                    <h3 class="text-[13px] font-medium text-[#fafafa]">
                         {{ selectedAgent ? `Historial — ${t(`agents.${selectedAgent}`)}` : 'Historial de ejecuciones' }}
                     </h3>
                     <!-- Status pills -->
@@ -236,25 +236,25 @@ const profilesByLayer = computed(() => {
                             :class="[
                                 'flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium transition',
                                 statusFilter === s
-                                    ? 'border-[#09090b] bg-[#09090b] text-white'
-                                    : 'border-[#e4e4e7] text-[#71717a] hover:border-[#a1a1aa]',
+                                    ? 'border-[#09090b] bg-white text-[#09090b]'
+                                    : 'border-[#1f1f23] text-[#a1a1aa] hover:border-[#3f3f46]',
                             ]"
                             @click="toggleStatus(s)"
                         >
-                            <span :class="['h-[5px] w-[5px] rounded-full', statusFilter === s ? 'bg-white' : statusDot[s]]" />
+                            <span :class="['h-[5px] w-[5px] rounded-full', statusFilter === s ? 'bg-[#0c0c0f]' : statusDot[s]]" />
                             {{ t(`agents.status.${s}`) }}
                         </button>
                     </div>
                 </div>
-                <button v-if="filters.agent_type || filters.status" class="text-[12px] text-[#71717a] hover:text-[#09090b]" @click="clearFilters">
+                <button v-if="filters.agent_type || filters.status" class="text-[12px] text-[#a1a1aa] hover:text-[#fafafa]" @click="clearFilters">
                     Limpiar filtros
                 </button>
             </div>
 
-            <div class="overflow-hidden rounded-lg border border-[#e4e4e7] bg-white">
+            <div class="overflow-hidden rounded-lg border border-[#1f1f23] bg-[#0c0c0f]">
                 <table class="w-full text-[13px]">
                     <thead>
-                        <tr class="border-b border-[#e4e4e7]">
+                        <tr class="border-b border-[#1f1f23]">
                             <th class="px-4 py-2.5 text-left text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Agente</th>
                             <th class="px-4 py-2.5 text-left text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Estado</th>
                             <th class="hidden px-4 py-2.5 text-left text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa] sm:table-cell">Duración</th>
@@ -263,12 +263,12 @@ const profilesByLayer = computed(() => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="run in runs.data" :key="run.id" class="border-b border-[#f4f4f5] last:border-0 hover:bg-[#fafafa]">
-                            <td class="px-4 py-2.5 font-medium text-[#09090b]">{{ t(`agents.${run.agent_type}`) }}</td>
+                        <tr v-for="run in runs.data" :key="run.id" class="border-b border-[#f4f4f5] last:border-0 hover:bg-[#111114]">
+                            <td class="px-4 py-2.5 font-medium text-[#fafafa]">{{ t(`agents.${run.agent_type}`) }}</td>
                             <td class="px-4 py-2.5">
                                 <span class="inline-flex items-center gap-1.5">
                                     <span :class="['h-[6px] w-[6px] rounded-full', run.status === 'running' ? 'animate-pulse' : '', statusDot[run.status]]" />
-                                    <span class="text-[#71717a]">{{ t(`agents.status.${run.status}`) }}</span>
+                                    <span class="text-[#a1a1aa]">{{ t(`agents.status.${run.status}`) }}</span>
                                 </span>
                             </td>
                             <td class="hidden px-4 py-2.5 font-mono text-[12px] text-[#a1a1aa] sm:table-cell">{{ duration(run) }}</td>
@@ -291,7 +291,7 @@ const profilesByLayer = computed(() => {
                         :key="page"
                         :class="[
                             'h-7 w-7 rounded-md font-medium transition',
-                            page === runs.current_page ? 'bg-[#09090b] text-white' : 'text-[#71717a] hover:bg-[#f4f4f5]',
+                            page === runs.current_page ? 'bg-white text-[#09090b]' : 'text-[#a1a1aa] hover:bg-[#1f1f23]',
                         ]"
                         @click="router.get('/agent-runs', { ...filters, page }, { preserveState: true })"
                     >{{ page }}</button>

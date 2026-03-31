@@ -44,14 +44,14 @@ function fmtDuration(sec: number | null): string {
 }
 
 const layerLabels = ['Núcleo', 'Funcional', 'Operativo'];
-const layerColors = ['bg-violet-100 text-violet-700', 'bg-blue-100 text-blue-700', 'bg-gray-100 text-gray-600'];
+const layerColors = ['bg-violet-100 text-violet-700', 'bg-blue-100 text-blue-400', 'bg-gray-100 text-[#71717a]'];
 </script>
 
 <template>
     <div
         :class="[
-            'cursor-pointer rounded-lg border bg-white p-4 transition',
-            selected ? 'border-[#09090b] ring-1 ring-[#09090b]' : 'border-[#e4e4e7] hover:border-[#a1a1aa]',
+            'cursor-pointer rounded-lg border bg-[#0c0c0f] p-4 transition',
+            selected ? 'border-[#09090b] ring-1 ring-[#09090b]' : 'border-[#1f1f23] hover:border-[#3f3f46]',
         ]"
         @click="$emit('select', agent.type)"
     >
@@ -66,7 +66,7 @@ const layerColors = ['bg-violet-100 text-violet-700', 'bg-blue-100 text-blue-700
                         agent.last_status === 'failed' ? 'bg-red-500' : 'bg-[#d4d4d8]',
                     ]"
                 />
-                <h3 class="text-[13px] font-semibold text-[#09090b]">{{ t(`agents.${agent.type}`) }}</h3>
+                <h3 class="text-[13px] font-semibold text-[#fafafa]">{{ t(`agents.${agent.type}`) }}</h3>
             </div>
             <span :class="['rounded-md px-1.5 py-0.5 text-[10px] font-medium', layerColors[agent.layer]]">
                 {{ layerLabels[agent.layer] }}
@@ -80,18 +80,18 @@ const layerColors = ['bg-violet-100 text-violet-700', 'bg-blue-100 text-blue-700
         <div class="mt-3 grid grid-cols-3 gap-3 border-t border-[#f4f4f5] pt-3">
             <div>
                 <p class="text-[10px] font-medium uppercase tracking-wide text-[#a1a1aa]">Hoy</p>
-                <p class="mt-0.5 text-[14px] font-semibold text-[#09090b]">{{ agent.today_runs }}</p>
+                <p class="mt-0.5 text-[14px] font-semibold text-[#fafafa]">{{ agent.today_runs }}</p>
                 <p v-if="agent.today_failed > 0" class="text-[10px] text-red-500">{{ agent.today_failed }} err</p>
             </div>
             <div>
                 <p class="text-[10px] font-medium uppercase tracking-wide text-[#a1a1aa]">Éxito</p>
-                <p class="mt-0.5 text-[14px] font-semibold" :class="agent.success_rate !== null && agent.success_rate >= 90 ? 'text-emerald-600' : agent.success_rate !== null && agent.success_rate >= 70 ? 'text-[#09090b]' : 'text-amber-600'">
+                <p class="mt-0.5 text-[14px] font-semibold" :class="agent.success_rate !== null && agent.success_rate >= 90 ? 'text-emerald-600' : agent.success_rate !== null && agent.success_rate >= 70 ? 'text-[#fafafa]' : 'text-amber-600'">
                     {{ agent.success_rate !== null ? `${agent.success_rate}%` : '—' }}
                 </p>
             </div>
             <div>
                 <p class="text-[10px] font-medium uppercase tracking-wide text-[#a1a1aa]">Duración</p>
-                <p class="mt-0.5 font-mono text-[13px] font-medium text-[#09090b]">{{ fmtDuration(agent.avg_duration_sec) }}</p>
+                <p class="mt-0.5 font-mono text-[13px] font-medium text-[#fafafa]">{{ fmtDuration(agent.avg_duration_sec) }}</p>
             </div>
         </div>
 
@@ -104,7 +104,7 @@ const layerColors = ['bg-violet-100 text-violet-700', 'bg-blue-100 text-blue-700
         </div>
 
         <!-- Error (if last run failed) -->
-        <div v-if="agent.last_error && agent.last_status === 'failed'" class="mt-2 rounded bg-red-50 px-2.5 py-1.5 text-[11px] text-red-600">
+        <div v-if="agent.last_error && agent.last_status === 'failed'" class="mt-2 rounded bg-red-950 px-2.5 py-1.5 text-[11px] text-red-400">
             {{ agent.last_error }}
         </div>
     </div>

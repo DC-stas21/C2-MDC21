@@ -45,7 +45,7 @@ function eventIcon(event: { type: string; status: string }): { color: string; ch
     <div v-if="events.length === 0" class="py-6 text-center text-[13px] text-[#a1a1aa]">Sin actividad reciente</div>
     <div v-else class="relative">
         <!-- Timeline line -->
-        <div class="absolute bottom-0 left-[11px] top-0 w-px bg-[#f4f4f5]" />
+        <div class="absolute bottom-0 left-[11px] top-0 w-px bg-[#1f1f23]" />
 
         <div
             v-for="(event, i) in events"
@@ -60,17 +60,17 @@ function eventIcon(event: { type: string; status: string }): { color: string; ch
             <!-- Content -->
             <div class="min-w-0 flex-1 pt-px">
                 <div class="flex items-baseline justify-between gap-2">
-                    <p class="text-[12px] text-[#09090b]">
+                    <p class="text-[12px] text-[#fafafa]">
                         <template v-if="event.type === 'agent_run'">
                             <span class="font-medium">{{ event.agent_type ? t(`agents.${event.agent_type}`) : 'Agente' }}</span>
-                            <span class="text-[#71717a]">
+                            <span class="text-[#a1a1aa]">
                                 {{ event.status === 'completed' ? ' completó ejecución' :
                                    event.status === 'failed' ? ' falló' :
                                    event.status === 'running' ? ' inició ejecución' : ' en cola' }}
                             </span>
                         </template>
                         <template v-else>
-                            <span class="text-[#71717a]">{{ event.status === 'approved' ? 'Aprobado:' : 'Denegado:' }}</span>
+                            <span class="text-[#a1a1aa]">{{ event.status === 'approved' ? 'Aprobado:' : 'Denegado:' }}</span>
                             {{ ' ' }}
                             <span class="font-medium">{{ event.action }}</span>
                         </template>

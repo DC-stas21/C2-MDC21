@@ -54,11 +54,11 @@ const descMap: Record<string, string> = {
 </script>
 
 <template>
-    <div class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-[#e4e4e7] bg-[#e4e4e7] sm:grid-cols-3">
+    <div class="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-[#1f1f23] bg-[#1f1f23] sm:grid-cols-3">
         <div
             v-for="agent in agents"
             :key="agent.type"
-            class="relative cursor-pointer bg-white p-3.5 transition hover:bg-[#fafafa]"
+            class="relative cursor-pointer bg-[#0c0c0f] p-3.5 transition hover:bg-[#111114]"
             @click="toggle(agent.type)"
         >
             <!-- Status indicator -->
@@ -73,7 +73,7 @@ const descMap: Record<string, string> = {
                                 agent.last_status === 'failed' ? 'bg-red-500' : 'bg-[#d4d4d8]',
                             ]"
                         />
-                        <span class="text-[13px] font-medium text-[#09090b]">{{ t(`agents.${agent.type}`) }}</span>
+                        <span class="text-[13px] font-medium text-[#fafafa]">{{ t(`agents.${agent.type}`) }}</span>
                     </div>
                     <p class="mt-0.5 text-[11px] text-[#a1a1aa]">{{ layerMap[agent.type] }}</p>
                 </div>
@@ -89,13 +89,13 @@ const descMap: Record<string, string> = {
 
             <!-- Expanded details -->
             <div v-if="expanded === agent.type" class="mt-3 border-t border-[#f4f4f5] pt-3">
-                <p class="text-[12px] leading-relaxed text-[#71717a]">{{ descMap[agent.type] }}</p>
-                <p v-if="agent.last_error" class="mt-2 rounded bg-red-50 px-2 py-1 text-[11px] text-red-600">
+                <p class="text-[12px] leading-relaxed text-[#a1a1aa]">{{ descMap[agent.type] }}</p>
+                <p v-if="agent.last_error" class="mt-2 rounded bg-red-950 px-2 py-1 text-[11px] text-red-400">
                     {{ agent.last_error }}
                 </p>
                 <Link
                     :href="`/agent-runs?agent_type=${agent.type}`"
-                    class="mt-2 inline-block text-[12px] font-medium text-[#71717a] underline decoration-[#e4e4e7] underline-offset-2 hover:text-[#09090b]"
+                    class="mt-2 inline-block text-[12px] font-medium text-[#a1a1aa] underline decoration-[#e4e4e7] underline-offset-2 hover:text-[#fafafa]"
                 >
                     Ver historial
                 </Link>

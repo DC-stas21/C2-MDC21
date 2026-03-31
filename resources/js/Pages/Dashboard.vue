@@ -49,25 +49,25 @@ const sections = ref({ agents: true, approvals: true, activity: true });
 
 const buildStatusStyle: Record<string, { label: string; dot: string; text: string }> = {
     pending: { label: 'Pendiente', dot: 'bg-[#d4d4d8]', text: 'text-[#a1a1aa]' },
-    building: { label: 'Construyendo...', dot: 'bg-amber-500 animate-pulse', text: 'text-amber-600' },
-    staging: { label: 'En staging', dot: 'bg-blue-500', text: 'text-blue-600' },
+    building: { label: 'Construyendo...', dot: 'bg-amber-9500 animate-pulse', text: 'text-amber-600' },
+    staging: { label: 'En staging', dot: 'bg-blue-9500', text: 'text-blue-600' },
     live: { label: 'Publicado', dot: 'bg-emerald-500', text: 'text-emerald-600' },
-    failed: { label: 'Error', dot: 'bg-red-500', text: 'text-red-600' },
+    failed: { label: 'Error', dot: 'bg-red-500', text: 'text-red-400' },
 };
 </script>
 
 <template>
     <AppLayout>
         <template #header>
-            <h1 class="text-[14px] font-medium text-[#09090b]">Panel de Control</h1>
+            <h1 class="text-[14px] font-medium text-[#fafafa]">Panel de Control</h1>
         </template>
 
         <!-- ===== TOP METRICS ===== -->
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <!-- Webs overview -->
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Webs</p>
-                <p class="mt-1 text-[22px] font-semibold text-[#09090b]">{{ stats.webs_total }}</p>
+                <p class="mt-1 text-[22px] font-semibold text-[#fafafa]">{{ stats.webs_total }}</p>
                 <p class="text-[11px] text-[#a1a1aa]">
                     <span v-if="stats.webs_live > 0" class="text-emerald-600">{{ stats.webs_live }} live</span>
                     <span v-if="stats.webs_building > 0" class="ml-1 text-amber-600">{{ stats.webs_building }} build</span>
@@ -76,38 +76,38 @@ const buildStatusStyle: Record<string, { label: string; dot: string; text: strin
             </div>
 
             <!-- Agentes -->
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Agentes</p>
-                <p class="mt-1 text-[22px] font-semibold text-[#09090b]">{{ stats.agents_active }}</p>
+                <p class="mt-1 text-[22px] font-semibold text-[#fafafa]">{{ stats.agents_active }}</p>
                 <p class="text-[11px] text-[#a1a1aa]">{{ stats.agents_completed_today }} completados hoy</p>
             </div>
 
             <!-- Tasa éxito -->
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Tasa éxito</p>
-                <p class="mt-1 text-[22px] font-semibold" :class="stats.success_rate !== null && stats.success_rate >= 90 ? 'text-emerald-600' : 'text-[#09090b]'">
+                <p class="mt-1 text-[22px] font-semibold" :class="stats.success_rate !== null && stats.success_rate >= 90 ? 'text-emerald-600' : 'text-[#fafafa]'">
                     {{ stats.success_rate !== null ? `${stats.success_rate}%` : '—' }}
                 </p>
                 <p class="text-[11px] text-[#a1a1aa]">últimos 7 días</p>
             </div>
 
             <!-- Fallidos -->
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Fallidos hoy</p>
-                <p class="mt-1 text-[22px] font-semibold" :class="stats.agents_failed_today > 0 ? 'text-red-600' : 'text-[#09090b]'">{{ stats.agents_failed_today }}</p>
+                <p class="mt-1 text-[22px] font-semibold" :class="stats.agents_failed_today > 0 ? 'text-red-400' : 'text-[#fafafa]'">{{ stats.agents_failed_today }}</p>
             </div>
 
             <!-- Aprobaciones -->
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Aprobaciones</p>
-                <p class="mt-1 text-[22px] font-semibold" :class="stats.approvals_pending > 0 ? 'text-amber-600' : 'text-[#09090b]'">{{ stats.approvals_pending }}</p>
+                <p class="mt-1 text-[22px] font-semibold" :class="stats.approvals_pending > 0 ? 'text-amber-600' : 'text-[#fafafa]'">{{ stats.approvals_pending }}</p>
                 <p class="text-[11px] text-[#a1a1aa]">pendientes</p>
             </div>
 
             <!-- Webs con error -->
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+            <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Errores</p>
-                <p class="mt-1 text-[22px] font-semibold" :class="stats.webs_failed > 0 ? 'text-red-600' : 'text-[#09090b]'">{{ stats.webs_failed }}</p>
+                <p class="mt-1 text-[22px] font-semibold" :class="stats.webs_failed > 0 ? 'text-red-400' : 'text-[#fafafa]'">{{ stats.webs_failed }}</p>
                 <p class="text-[11px] text-[#a1a1aa]">webs con error</p>
             </div>
         </div>
@@ -115,25 +115,25 @@ const buildStatusStyle: Record<string, { label: string; dot: string; text: strin
         <!-- ===== PIPELINE STATUS ===== -->
         <div class="mt-6">
             <div class="mb-3 flex items-center justify-between">
-                <h3 class="text-[13px] font-medium text-[#09090b]">
+                <h3 class="text-[13px] font-medium text-[#fafafa]">
                     Pipeline de webs
                     <span class="text-[11px] font-normal text-[#a1a1aa]">— estado de cada activo</span>
                 </h3>
-                <Link href="/assets" class="text-[12px] text-[#71717a] hover:text-[#09090b]">Ver portafolio</Link>
+                <Link href="/assets" class="text-[12px] text-[#a1a1aa] hover:text-[#fafafa]">Ver portafolio</Link>
             </div>
-            <div v-if="assets.length === 0" class="rounded-lg border border-[#e4e4e7] bg-white py-8 text-center text-[13px] text-[#a1a1aa]">
+            <div v-if="assets.length === 0" class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] py-8 text-center text-[13px] text-[#a1a1aa]">
                 Sin activos. Crea uno en /admin → Activos.
             </div>
             <div v-else class="grid gap-2">
                 <div
                     v-for="asset in assets"
                     :key="asset.id"
-                    class="flex items-center justify-between rounded-lg border border-[#e4e4e7] bg-white px-4 py-3"
+                    class="flex items-center justify-between rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-4 py-3"
                 >
                     <div class="flex items-center gap-3">
                         <span :class="['h-2.5 w-2.5 rounded-full', buildStatusStyle[asset.build_status]?.dot ?? 'bg-[#d4d4d8]']" />
                         <div>
-                            <p class="text-[13px] font-medium text-[#09090b]">{{ asset.domain }}</p>
+                            <p class="text-[13px] font-medium text-[#fafafa]">{{ asset.domain }}</p>
                             <p class="text-[11px] text-[#a1a1aa]">{{ asset.vertical }} · {{ asset.description?.substring(0, 60) }}</p>
                         </div>
                     </div>
@@ -150,14 +150,14 @@ const buildStatusStyle: Record<string, { label: string; dot: string; text: strin
         <!-- ===== AGENTS ===== -->
         <div class="mt-6">
             <div class="mb-3 flex items-center justify-between">
-                <button class="flex items-center gap-1.5 text-[13px] font-medium text-[#09090b]" @click="sections.agents = !sections.agents">
+                <button class="flex items-center gap-1.5 text-[13px] font-medium text-[#fafafa]" @click="sections.agents = !sections.agents">
                     <svg :class="['h-3 w-3 text-[#a1a1aa] transition-transform', sections.agents ? 'rotate-90' : '']" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                     Agentes del pipeline
-                    <span class="text-[11px] font-normal text-[#a1a1aa]">— 6 agentes core</span>
+                    <span class="text-[11px] font-normal text-[#a1a1aa]">— pipeline de creación</span>
                 </button>
-                <Link href="/agent-runs" class="text-[12px] text-[#71717a] hover:text-[#09090b]">Historial</Link>
+                <Link href="/agent-runs" class="text-[12px] text-[#a1a1aa] hover:text-[#fafafa]">Historial</Link>
             </div>
             <div v-show="sections.agents">
                 <AgentStatusGrid :agents="agentStatuses" />
@@ -168,24 +168,24 @@ const buildStatusStyle: Record<string, { label: string; dot: string; text: strin
         <div class="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-12">
             <!-- LEFT -->
             <div class="space-y-5 lg:col-span-8">
-                <div class="rounded-lg border border-[#e4e4e7] bg-white px-5 py-4">
+                <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-5 py-4">
                     <div class="mb-3">
-                        <h3 class="text-[13px] font-medium text-[#09090b]">Actividad semanal</h3>
+                        <h3 class="text-[13px] font-medium text-[#fafafa]">Actividad semanal</h3>
                         <p class="text-[11px] text-[#a1a1aa]">Ejecuciones de agentes por día</p>
                     </div>
                     <AgentActivityChart :data="agentActivity" />
                 </div>
 
-                <div class="rounded-lg border border-[#e4e4e7] bg-white px-5 py-4">
+                <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-5 py-4">
                     <div class="mb-3 flex items-center justify-between">
-                        <button class="flex items-center gap-1.5 text-[13px] font-medium text-[#09090b]" @click="sections.approvals = !sections.approvals">
+                        <button class="flex items-center gap-1.5 text-[13px] font-medium text-[#fafafa]" @click="sections.approvals = !sections.approvals">
                             <svg :class="['h-3 w-3 text-[#a1a1aa] transition-transform', sections.approvals ? 'rotate-90' : '']" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                             </svg>
                             Pendientes de aprobación
-                            <span v-if="stats.approvals_pending > 0" class="ml-1 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-amber-100 px-1 text-[10px] font-semibold text-amber-700">{{ stats.approvals_pending }}</span>
+                            <span v-if="stats.approvals_pending > 0" class="ml-1 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-amber-900/30 px-1 text-[10px] font-semibold text-amber-400">{{ stats.approvals_pending }}</span>
                         </button>
-                        <Link href="/approvals" class="text-[12px] text-[#71717a] hover:text-[#09090b]">Ver todas</Link>
+                        <Link href="/approvals" class="text-[12px] text-[#a1a1aa] hover:text-[#fafafa]">Ver todas</Link>
                     </div>
                     <div v-show="sections.approvals">
                         <div v-if="pendingApprovals.length === 0" class="py-6 text-center text-[13px] text-[#a1a1aa]">
@@ -200,8 +200,8 @@ const buildStatusStyle: Record<string, { label: string; dot: string; text: strin
 
             <!-- RIGHT -->
             <div class="space-y-5 lg:col-span-4">
-                <div class="rounded-lg border border-[#e4e4e7] bg-white px-5 py-4">
-                    <button class="mb-3 flex w-full items-center gap-1.5 text-[13px] font-medium text-[#09090b]" @click="sections.activity = !sections.activity">
+                <div class="rounded-lg border border-[#1f1f23] bg-[#0c0c0f] px-5 py-4">
+                    <button class="mb-3 flex w-full items-center gap-1.5 text-[13px] font-medium text-[#fafafa]" @click="sections.activity = !sections.activity">
                         <svg :class="['h-3 w-3 text-[#a1a1aa] transition-transform', sections.activity ? 'rotate-90' : '']" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                         </svg>

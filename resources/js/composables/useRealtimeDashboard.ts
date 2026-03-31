@@ -49,7 +49,7 @@ export function useRealtimeDashboard() {
                     // Refresh Inertia page data after a short delay
                     // to let the DB update settle
                     setTimeout(() => {
-                        router.reload({ only: ['stats', 'agentStatuses', 'recentRuns', 'timeline', 'agentActivity'] });
+                        router.reload({ only: ['stats', 'agentStatuses', 'assets', 'timeline', 'agentActivity', 'pendingApprovals'] });
                     }, 500);
                 })
                 .listen('.approval.created', (event: ApprovalEvent) => {
