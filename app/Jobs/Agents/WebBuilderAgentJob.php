@@ -197,6 +197,12 @@ PROMPT;
             .'Tono: '.($context['tone'] ?? 'profesional y cercano')."\n"
             .'Keywords: '.($context['keywords'] ?? '');
 
+        // If rebuilding with feedback, include it in the prompt
+        $feedback = $context['rebuild_feedback'] ?? null;
+        if ($feedback) {
+            $prompt .= "\n\nIMPORTANTE — FEEDBACK DEL SOCIO (corregir en esta versión):\n{$feedback}";
+        }
+
         $response = $claude->message(
             prompt: $prompt,
             model: config('services.claude.model_orchestrator', 'claude-sonnet-4-5'),

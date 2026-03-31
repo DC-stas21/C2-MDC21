@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Agents\BuildReleaseAgentJob;
+use App\Jobs\Agents\WebBuilderAgentJob;
 use App\Models\Approval;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -58,18 +60,25 @@ class ApprovalController extends Controller
             ->withProperties(['action' => 'approved', 'note' => $request->input('note')])
             ->log('Approval approved');
 
-        // If this is a production deploy approval, deploy and mark as live
+        // If this is a production deploy approval, dispatch production deploy
         $domain = $approval->context['domain'] ?? null;
         if ($domain && str_contains($approval->action, 'Deploy a producción')) {
             $niche = NicheConfig::where('domain', $domain)->first();
             if ($niche && $niche->build_status === NicheConfig::STATUS_STAGING) {
-                $niche->update([
-                    'build_status' => NicheConfig::STATUS_LIVE,
-                    'build_metadata' => array_merge($niche->build_metadata ?? [], [
-                        'deployed_at' => now()->toIso8601String(),
-                        'approved_by' => $request->user()?->id,
-                    ]),
-                ]);
+                if (app()->environment('production')) {
+                    // Production: dispatch BuildRelease → Nginx + SSL + health check
+                    BuildReleaseAgentJob::dispatch($niche->id, 'production');
+                    $niche->update(['build_status' => NicheConfig::STATUS_BUILDING]);
+                } else {
+                    // Local: mark as live directly (no Nginx)
+                    $niche->update([
+                        'build_status' => NicheConfig::STATUS_LIVE,
+                        'build_metadata' => array_merge($niche->build_metadata ?? [], [
+                            'deployed_at' => now()->toIso8601String(),
+                            'approved_by' => $request->user()?->id,
+                        ]),
+                    ]);
+                }
             }
         }
 
@@ -91,7 +100,32 @@ class ApprovalController extends Controller
             ->withProperties(['action' => 'denied', 'note' => $request->input('note')])
             ->log('Approval denied');
 
-        return back()->with('success', 'Denegado correctamente.');
+        // If deploy denied with feedback → rebuild the web with the feedback
+        $domain = $approval->context['domain'] ?? null;
+        $feedback = $request->input('note');
+        if ($domain && $feedback && str_contains($approval->action, 'Deploy')) {
+            $niche = NicheConfig::where('domain', $domain)->first();
+            if ($niche) {
+                // Store feedback and re-trigger build
+                $niche->update([
+                    'build_status' => NicheConfig::STATUS_PENDING,
+                    'build_metadata' => array_merge($niche->build_metadata ?? [], [
+                        'feedback' => $feedback,
+                        'feedback_at' => now()->toIso8601String(),
+                        'feedback_by' => $request->user()?->name,
+                    ]),
+                ]);
+
+                // Re-dispatch WebBuilder with feedback in the config
+                $config = $niche->config ?? [];
+                $config['rebuild_feedback'] = $feedback;
+                $niche->update(['config' => $config]);
+
+                WebBuilderAgentJob::dispatch($niche->id);
+            }
+        }
+
+        return back()->with('success', 'Denegado. WebBuilder regenerará la web con tu feedback.');
     }
 
     private function getStats(): array

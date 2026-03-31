@@ -6,6 +6,7 @@ use App\Models\AgentRun;
 use App\Models\Approval;
 use App\Models\NicheConfig;
 use App\Services\NginxConfigService;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class BuildReleaseAgentJob extends BaseAgentJob
@@ -84,13 +85,46 @@ class BuildReleaseAgentJob extends BaseAgentJob
             Log::info('[build_release] Staging ready', ['domain' => $niche->domain]);
 
         } else {
-            // Production: SSL + mark as live
+            // Production: SSL + health check + mark as live
             if ($nginx->isAvailable()) {
                 $steps['ssl'] = $nginx->setupSsl($niche->domain);
-            } else {
-                $steps['ssl'] = ['status' => 'skipped'];
+                if ($steps['ssl']['status'] === 'failed') {
+                    $niche->update([
+                        'build_status' => NicheConfig::STATUS_FAILED,
+                        'build_metadata' => array_merge($niche->build_metadata ?? [], [
+                            'error' => 'SSL setup failed: '.($steps['ssl']['message'] ?? ''),
+                        ]),
+                    ]);
+                    $this->updateOutput(['steps' => $steps, 'result' => 'failed', 'error' => 'SSL failed']);
+                    throw new \RuntimeException('SSL setup failed for '.$niche->domain);
+                }
             }
 
+            // Health check — verify the site actually responds
+            $steps['health_check'] = $this->healthCheck($niche->domain);
+
+            if ($steps['health_check']['status'] === 'failed') {
+                $niche->update([
+                    'build_status' => NicheConfig::STATUS_FAILED,
+                    'build_metadata' => array_merge($niche->build_metadata ?? [], [
+                        'error' => 'Health check failed: '.($steps['health_check']['message'] ?? ''),
+                    ]),
+                ]);
+                $this->updateOutput(['steps' => $steps, 'result' => 'failed', 'error' => 'Health check failed']);
+
+                Approval::create([
+                    'agent_run_id' => $run->id,
+                    'action' => "Deploy falló: {$niche->domain} — health check no pasó",
+                    'level' => 'N3',
+                    'status' => 'pending',
+                    'reason' => 'La web no responde correctamente después del deploy. Revisar logs.',
+                    'context' => ['domain' => $niche->domain, 'health_check' => $steps['health_check']],
+                ]);
+
+                throw new \RuntimeException('Health check failed for '.$niche->domain);
+            }
+
+            // All good → mark as live
             $niche->update([
                 'build_status' => NicheConfig::STATUS_LIVE,
                 'build_metadata' => array_merge($niche->build_metadata ?? [], [
@@ -106,7 +140,44 @@ class BuildReleaseAgentJob extends BaseAgentJob
                 'url' => "https://{$niche->domain}",
             ]);
 
-            Log::info('[build_release] Production deployed', ['domain' => $niche->domain]);
+            Log::info('[build_release] Production deployed and verified', ['domain' => $niche->domain]);
+        }
+    }
+
+    private function healthCheck(string $domain): array
+    {
+        // Wait a moment for Nginx to reload
+        sleep(2);
+
+        try {
+            $response = Http::timeout(15)->get("https://{$domain}");
+
+            if ($response->successful()) {
+                $bodyLength = strlen($response->body());
+
+                return [
+                    'status' => $bodyLength > 100 ? 'passed' : 'failed',
+                    'http_code' => $response->status(),
+                    'body_size' => $bodyLength,
+                    'message' => $bodyLength > 100 ? "OK — {$response->status()}, {$bodyLength} bytes" : 'Page is too small, may be empty',
+                ];
+            }
+
+            return [
+                'status' => 'failed',
+                'http_code' => $response->status(),
+                'message' => "HTTP {$response->status()}",
+            ];
+        } catch (\Throwable $e) {
+            // In local dev, domain won't resolve — that's OK
+            if (! app()->environment('production')) {
+                return ['status' => 'passed', 'message' => 'Skipped in local (domain not reachable)'];
+            }
+
+            return [
+                'status' => 'failed',
+                'message' => "Unreachable: {$e->getMessage()}",
+            ];
         }
     }
 }
