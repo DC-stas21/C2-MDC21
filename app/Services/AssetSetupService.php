@@ -113,6 +113,8 @@ class AssetSetupService
             'Seguros' => 'No prometer precios concretos, usar rangos. Explicar coberturas y exclusiones con claridad. Recomendar comparar.',
             'Préstamos' => 'Obligatorio explicar TAE, no solo TIN. Advertir sobre endeudamiento. Nunca promover préstamos rápidos de alto interés.',
             'Solar' => 'ROI calculado con datos IDAE. Incluir subvenciones vigentes. Distinguir entre autoconsumo con y sin excedentes.',
+            'Ciberseguridad' => 'Referenciar INCIBE y ENS. No crear alarma innecesaria. Recomendar siempre auditoría profesional para casos críticos.',
+            'Contabilidad' => 'Datos fiscales de la Agencia Tributaria. Distinguir entre regímenes (estimación directa/módulos). Advertir que no sustituye asesoramiento fiscal.',
             default => "Contenido verificado con fuentes oficiales del sector {$vertical} en España.",
         };
     }

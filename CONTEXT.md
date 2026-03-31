@@ -2,7 +2,7 @@
 
 > Pega este archivo completo al inicio de cualquier chat de IA antes de escribir código.
 > La IA debe leerlo completo y confirmar que lo ha entendido antes de empezar.
-> Versión: 3.0 · Fecha: Marzo 2026 · Estado: EN DESARROLLO — Fábrica de webs funcional, falta infra
+> Versión: 3.1 · Fecha: Marzo 2026 · Estado: EN DESARROLLO — Fábrica de webs completa, falta infra
 
 ---
 
@@ -553,16 +553,16 @@ Dashboard · Agentes · Aprobaciones · Activos · Contenido
 - [x] Spatie Activity Log 4.12 instalado, tablas migradas
 - [x] Spatie Laravel PDF 2.4 instalado
 - [x] 19 migraciones ejecutadas en PostgreSQL local
-- [x] 11 modelos Eloquent con `HasUuids`, casts JSONB y relaciones
-- [x] 10 recursos Filament CRUD completos (40 archivos)
+- [x] 7 modelos Eloquent con `HasUuids`, casts JSONB (AgentRun, Approval, Artifact, NicheConfig, Policy, PromptVersion, User)
+- [x] 3 recursos Filament (Activos, Políticas, Prompts)
 - [x] `app/Services/AI/ClaudeService.php` — message + batch + Prompt Caching
 - [x] `app/Services/AI/ChatGPTService.php` — message + batch + polling
 - [x] `app/Services/AI/RateLimiterService.php` — rate limiting por provider
 - [x] `app/Services/PromptRegistry.php` — prompts activos desde DB con cache
 - [x] `app/Services/ScoreComposite.php` — score 0-100 con 6 dimensiones
 - [x] `app/Jobs/Agents/BaseAgentJob.php` — registro automático en `agent_runs`
-- [x] 9 Jobs de agentes implementados con lógica funcional + fallbacks sin API key
-- [x] `config/services.php` — Claude, OpenAI, Telegram, Cloudflare, GitHub, SEMrush
+- [x] 8 Jobs de agentes implementados + WebBuilder (10 total, 2 desactivados)
+- [x] `config/services.php` — Claude, OpenAI, Telegram, AdSense, Cloudflare, GitHub
 - [x] `AppServiceProvider` con singletons de todos los services
 
 ### ✅ COMPLETADO — Panel de Control (MDC21-02 a MDC21-09)
@@ -627,7 +627,7 @@ Template web incluye:
 - [x] `PromptRegistry` — prompts activos desde DB con cache Redis
 - [x] `ScoreComposite` — score 0-100 con 6 dimensiones ponderadas
 - [x] `TelegramService` — listo para token (send, infraAlert, contentNotify, approvalNeeded)
-- [x] `WebConfigTemplateService` — genera configs por vertical
+- [x] `WebConfigTemplateService` — genera configs por 7 verticales (Hipotecas, Energía, Seguros, Préstamos, Solar, Ciberseguridad, Contabilidad)
 - [x] `NginxConfigService` — deploy + SSL + rollback
 - [x] Migración fix: activity_log causer_id/subject_id bigint → uuid
 - [x] Nginx stub en `stubs/nginx/site.conf.stub`
@@ -640,13 +640,23 @@ Template web incluye:
 - [ ] `php artisan horizon` + `php artisan reverb:start` en producción
 - [ ] Primer activo real: comprar dominio → DNS → crear en Filament → deploy
 
+### ✅ COMPLETADO — Limpieza + Pipeline + API (MDC21-14/15)
+- [x] Eliminados modelos muertos: BlogPost, Lead, Experiment, EditorialCalendar
+- [x] Eliminados agentes desactivados: EngagementRetention, MonetizationLeads
+- [x] Eliminados componentes/archivos muertos: ScoreGaugeChart, StatsCard, app.js, bootstrap.js
+- [x] Cadena de agentes completa: WebBuilder → PolicyBrand → QA(qa_web) → BuildRelease
+- [x] QA task `qa_web`: verifica dist/, index.html, config válido, HTTP check
+- [x] BuildRelease reescrito: deploy de webs con Nginx + SSL + staging/producción
+- [x] SeoContentAgent: inyecta artículos en site.config.json (no en tabla)
+- [x] ComparatorTool + CheckerTool en el template
+- [x] 7 verticales: Hipotecas, Energía, Seguros, Préstamos, Solar, Ciberseguridad, Contabilidad
+- [x] API endpoint `POST /api/leads` para recibir formularios de las webs
+- [x] 51 tests, 207 assertions
+
 ### ⬜ PENDIENTE — Código (próximas sesiones)
-- [ ] ComparatorTool + CheckerTool en el template
-- [ ] API endpoint POST /api/leads en C2
 - [ ] Analytics (Umami self-hosted)
 - [ ] Playwright + Lighthouse CI reales en QA agent
 - [ ] Conectar Forge para deploys reales en BuildRelease agent
-- [ ] CONTEXT.md: documentar estructura de carpetas actualizada
 
 ---
 

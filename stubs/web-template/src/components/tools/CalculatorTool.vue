@@ -60,6 +60,17 @@ const result = computed(() => {
         return { net_cost: netCost, roi_years: roiYears, savings_25y: annualSavings * 25 - netCost };
     }
 
+    if (props.tool_config.formula === 'spanish_autonomo') {
+        const income = v.income ?? 15000;
+        const expenses = v.expenses ?? 5000;
+        const irpfRate = (v.irpf_rate ?? 15) / 100;
+        const base = income - expenses;
+        const ivaPagar = income * 0.21 - expenses * 0.21;
+        const irpfPagar = base * irpfRate;
+        const beneficioNeto = base - irpfPagar;
+        return { iva_pagar: ivaPagar, irpf_pagar: irpfPagar, beneficio_neto: beneficioNeto };
+    }
+
     return {};
 });
 
@@ -76,6 +87,9 @@ const outputLabels: Record<string, string> = {
     tae: 'TAE',
     net_cost: 'Coste neto',
     roi_years: 'Amortización (años)',
+    iva_pagar: 'IVA a pagar',
+    irpf_pagar: 'IRPF a pagar',
+    beneficio_neto: 'Beneficio neto',
     savings_25y: 'Ahorro en 25 años',
 };
 </script>

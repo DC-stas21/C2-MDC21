@@ -74,6 +74,8 @@ class WebConfigTemplateService
             'Seguros' => ['primary' => '#7c3aed', 'secondary' => '#a78bfa', 'accent' => '#06b6d4'],
             'Préstamos' => ['primary' => '#dc2626', 'secondary' => '#f87171', 'accent' => '#2563eb'],
             'Solar' => ['primary' => '#ea580c', 'secondary' => '#f97316', 'accent' => '#16a34a'],
+            'Ciberseguridad' => ['primary' => '#0f172a', 'secondary' => '#334155', 'accent' => '#22d3ee'],
+            'Contabilidad' => ['primary' => '#1e3a5f', 'secondary' => '#3b82f6', 'accent' => '#10b981'],
         ];
 
         $defaults = $verticalColors[$vertical] ?? ['primary' => '#4f46e5', 'secondary' => '#0ea5e9', 'accent' => '#f59e0b'];
@@ -155,6 +157,42 @@ class WebConfigTemplateService
                     'formula' => 'solar_roi',
                     'output_fields' => ['net_cost', 'roi_years', 'savings_25y'],
                     'disclaimer' => 'Estimación basada en datos medios. El ahorro real depende de tu ubicación, consumo y tarifa.',
+                ],
+            ],
+            'Ciberseguridad' => [
+                'page_title' => 'Audit de Ciberseguridad',
+                'tool_type' => 'checker',
+                'tool_config' => [
+                    'checker_type' => 'cybersecurity_audit',
+                    'title' => 'Evalúa la ciberseguridad de tu empresa',
+                    'categories' => ['Acceso y contraseñas', 'Datos y backups', 'Red y dispositivos'],
+                    'checks' => [
+                        ['id' => 'mfa', 'label' => 'Autenticación multifactor (MFA)', 'description' => 'Todos los accesos críticos usan 2FA o MFA', 'category' => 'Acceso y contraseñas'],
+                        ['id' => 'passwords', 'label' => 'Política de contraseñas', 'description' => 'Contraseñas de mínimo 12 caracteres, únicas por servicio', 'category' => 'Acceso y contraseñas'],
+                        ['id' => 'manager', 'label' => 'Gestor de contraseñas', 'description' => 'Usáis un gestor como 1Password, Bitwarden o similar', 'category' => 'Acceso y contraseñas'],
+                        ['id' => 'backups', 'label' => 'Backups automáticos', 'description' => 'Backups diarios de datos críticos con verificación', 'category' => 'Datos y backups'],
+                        ['id' => 'encryption', 'label' => 'Datos cifrados', 'description' => 'Discos y comunicaciones cifradas (SSL/TLS, BitLocker)', 'category' => 'Datos y backups'],
+                        ['id' => 'rgpd', 'label' => 'Cumplimiento RGPD', 'description' => 'Política de privacidad, consentimientos, DPO si aplica', 'category' => 'Datos y backups'],
+                        ['id' => 'firewall', 'label' => 'Firewall activo', 'description' => 'Firewall configurado en red y dispositivos', 'category' => 'Red y dispositivos'],
+                        ['id' => 'updates', 'label' => 'Actualizaciones al día', 'description' => 'SO, software y firmware actualizados regularmente', 'category' => 'Red y dispositivos'],
+                        ['id' => 'antivirus', 'label' => 'Antivirus/EDR', 'description' => 'Protección endpoint en todos los dispositivos', 'category' => 'Red y dispositivos'],
+                    ],
+                    'disclaimer' => 'Esta evaluación es orientativa y no sustituye una auditoría profesional de ciberseguridad.',
+                ],
+            ],
+            'Contabilidad' => [
+                'page_title' => 'Calculadora de Impuestos para Autónomos',
+                'tool_type' => 'calculator',
+                'tool_config' => [
+                    'calculator_type' => 'tax',
+                    'fields' => [
+                        ['name' => 'income', 'label' => 'Ingresos trimestrales (€)', 'type' => 'currency', 'min' => 0, 'max' => 100000, 'default' => 15000],
+                        ['name' => 'expenses', 'label' => 'Gastos deducibles (€)', 'type' => 'currency', 'min' => 0, 'max' => 80000, 'default' => 5000],
+                        ['name' => 'irpf_rate', 'label' => 'Retención IRPF (%)', 'type' => 'number', 'min' => 7, 'max' => 21, 'step' => 0.5, 'default' => 15],
+                    ],
+                    'formula' => 'spanish_autonomo',
+                    'output_fields' => ['iva_pagar', 'irpf_pagar', 'beneficio_neto'],
+                    'disclaimer' => 'Cálculo orientativo. Consulta con tu asesor fiscal para tu situación particular.',
                 ],
             ],
             default => [
@@ -303,6 +341,8 @@ class WebConfigTemplateService
             'Seguros' => "Comparador de Seguros | {$domain}",
             'Préstamos' => "Calculadora de Préstamos | {$domain}",
             'Solar' => "Calculadora de Energía Solar | {$domain}",
+            'Ciberseguridad' => "Audit de Ciberseguridad PYME | {$domain}",
+            'Contabilidad' => "Calculadora de Impuestos Autónomos | {$domain}",
             default => "{$vertical} | {$domain}",
         };
     }
@@ -315,6 +355,8 @@ class WebConfigTemplateService
             'Seguros' => 'Encuentra el seguro que necesitas',
             'Préstamos' => 'Calcula tu préstamo al instante',
             'Solar' => 'Descubre cuánto puedes ahorrar con solar',
+            'Ciberseguridad' => 'Evalúa la ciberseguridad de tu empresa',
+            'Contabilidad' => 'Calcula tus impuestos de autónomo',
             default => "Tu herramienta de {$vertical}",
         };
     }
@@ -354,6 +396,16 @@ class WebConfigTemplateService
             'Préstamos' => [
                 ['question' => '¿Qué diferencia hay entre TIN y TAE?', 'answer' => 'El TIN es el tipo de interés nominal. La TAE incluye comisiones y gastos, reflejando el coste real.'],
                 ['question' => '¿Puedo amortizar anticipadamente?', 'answer' => 'Sí, aunque puede haber una comisión de amortización anticipada. Consulta las condiciones de tu contrato.'],
+            ],
+            'Ciberseguridad' => [
+                ['question' => '¿Qué es un audit de ciberseguridad?', 'answer' => 'Es una evaluación sistemática de las medidas de seguridad de tu empresa para identificar vulnerabilidades y áreas de mejora.'],
+                ['question' => '¿Es obligatorio para PYMEs?', 'answer' => 'No es obligatorio por ley, pero sí altamente recomendable. El RGPD exige medidas de seguridad adecuadas para proteger datos personales.'],
+                ['question' => '¿Cada cuánto debo hacer un audit?', 'answer' => 'Se recomienda al menos una vez al año, o tras cambios significativos en la infraestructura o personal.'],
+            ],
+            'Contabilidad' => [
+                ['question' => '¿Cuánto IRPF paga un autónomo?', 'answer' => 'La retención estándar es del 15%. Los nuevos autónomos pueden aplicar el 7% durante los primeros 3 años.'],
+                ['question' => '¿Qué gastos puedo deducir?', 'answer' => 'Alquiler de oficina, suministros, material, seguros, cuota de autónomo, formación, y gastos de vehículo (parcialmente).'],
+                ['question' => '¿Cuándo se presenta el IVA?', 'answer' => 'Trimestralmente: antes del 20 de abril, julio y octubre, y antes del 30 de enero del año siguiente.'],
             ],
             default => [
                 ['question' => '¿Es gratuito?', 'answer' => 'Sí, totalmente gratuito y sin registro.'],
