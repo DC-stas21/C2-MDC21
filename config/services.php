@@ -57,12 +57,4 @@ return [
         'token' => env('GITHUB_TOKEN'),
     ],
 
-    'google_search_console' => [
-        'key' => env('GOOGLE_SEARCH_CONSOLE_KEY'),
-    ],
-
-    'semrush' => [
-        'api_key' => env('SEMRUSH_API_KEY'),
-    ],
-
 ];

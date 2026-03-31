@@ -3,8 +3,8 @@
 namespace App\Jobs\Agents;
 
 use App\Models\AgentRun;
-use App\Models\BlogPost;
 use App\Models\NicheConfig;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -14,7 +14,7 @@ class SeoContentAgentJob extends BaseAgentJob
 
     public function __construct(
         private readonly string $nicheConfigId,
-        private readonly int $articlesCount = 5
+        private readonly int $articlesCount = 3
     ) {
         $this->onQueue('agents');
     }
@@ -32,6 +32,8 @@ class SeoContentAgentJob extends BaseAgentJob
     protected function execute(AgentRun $run): void
     {
         $niche = NicheConfig::findOrFail($this->nicheConfigId);
+
+        // Generate articles
         $keywords = $this->researchKeywords($niche);
         $articles = [];
 
@@ -55,36 +57,58 @@ class SeoContentAgentJob extends BaseAgentJob
             }
 
             if ($policyResult === 'approved') {
-                BlogPost::create([
-                    'title' => $article['title'],
-                    'slug' => Str::slug($article['title']),
-                    'author' => 'MDC21 Editorial',
-                    'body' => $article['body'],
-                    'sources' => $article['sources'],
-                    'methodology' => $article['methodology'],
-                    'status' => 'draft',
-                    'asset' => $niche->domain,
-                ]);
+                $articles[] = $article;
             }
+        }
 
-            $articles[] = ['title' => $article['title'], 'policy' => $policyResult];
+        // Inject articles into the site.config.json of the web
+        if (! empty($articles)) {
+            $this->injectIntoSiteConfig($niche, $articles);
         }
 
         $this->updateOutput([
             'domain' => $niche->domain,
             'keywords' => count($keywords),
-            'articles' => count($articles),
-            'approved' => collect($articles)->where('policy', 'approved')->count(),
-            'rejected' => collect($articles)->where('policy', 'rejected')->count(),
+            'articles_generated' => count($articles),
             'method' => empty(config('services.openai.api_key')) ? 'template' : 'ai',
         ]);
 
         Log::info('[seo_content] Completed', ['domain' => $niche->domain, 'articles' => count($articles)]);
     }
 
+    private function injectIntoSiteConfig(NicheConfig $niche, array $articles): void
+    {
+        $configPath = $niche->sitePath().'/site.config.json';
+
+        if (! File::exists($configPath)) {
+            Log::warning('[seo_content] site.config.json not found, skipping injection', ['path' => $configPath]);
+
+            return;
+        }
+
+        $config = json_decode(File::get($configPath), true);
+        $existing = $config['blog']['articles'] ?? [];
+
+        foreach ($articles as $article) {
+            $existing[] = [
+                'slug' => Str::slug($article['title']),
+                'title' => $article['title'],
+                'excerpt' => mb_substr(strip_tags($article['body']), 0, 160),
+                'body' => $article['body'],
+                'author' => 'MDC21 Editorial',
+                'date' => now()->format('d/m/Y'),
+                'reading_time' => max(3, (int) (str_word_count($article['body']) / 200)),
+                'category' => $niche->vertical,
+                'sources' => $article['sources'],
+            ];
+        }
+
+        $config['blog']['articles'] = $existing;
+        File::put($configPath, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    }
+
     private function researchKeywords(NicheConfig $niche): array
     {
-        // TODO: Use GPT-4o when API key configured
         $templates = [
             'Hipotecas' => ['Cómo calcular la cuota de tu hipoteca', 'Hipoteca fija vs variable', 'Requisitos para pedir una hipoteca'],
             'Energía' => ['Cómo reducir tu factura de la luz', 'Mercado regulado vs libre', 'Energía solar para hogares'],
@@ -98,7 +122,6 @@ class SeoContentAgentJob extends BaseAgentJob
 
     private function generateArticle(NicheConfig $niche, string $keyword): array
     {
-        // TODO: Use GPT-4o-mini Batch when API key configured
         $sources = [
             'Hipotecas' => ['Banco de España', 'INE', 'BCE'],
             'Energía' => ['CNMC', 'IDAE', 'Red Eléctrica de España'],
@@ -109,7 +132,7 @@ class SeoContentAgentJob extends BaseAgentJob
 
         return [
             'title' => $keyword,
-            'body' => "[Contenido pendiente de generación por IA]\n\nArtículo sobre: {$keyword}\nSector: {$niche->vertical}\nActivo: {$niche->domain}",
+            'body' => "<h2>{$keyword}</h2><p>Artículo sobre {$keyword} para el mercado español.</p><p>Contenido pendiente de generación por IA cuando las API keys estén configuradas.</p>",
             'sources' => $sources[$niche->vertical] ?? ['Fuentes oficiales'],
             'methodology' => "Análisis basado en datos públicos del sector {$niche->vertical} en España.",
         ];

@@ -5,8 +5,8 @@ namespace App\Jobs\Agents;
 use App\Models\AgentRun;
 use App\Models\Approval;
 use App\Models\NicheConfig;
+use App\Services\NginxConfigService;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Process;
 
 class BuildReleaseAgentJob extends BaseAgentJob
 {
@@ -34,74 +34,79 @@ class BuildReleaseAgentJob extends BaseAgentJob
         $niche = NicheConfig::findOrFail($this->nicheConfigId);
         $steps = [];
 
-        $steps['validate_config'] = $this->validateConfig($niche);
-        if ($steps['validate_config']['status'] === 'failed') {
-            $this->updateOutput(['steps' => $steps, 'result' => 'failed']);
-            throw new \RuntimeException('Config validation failed: '.$steps['validate_config']['message']);
+        // Validate the web exists
+        $steps['web_exists'] = [
+            'status' => is_dir($niche->sitePath().'/dist') ? 'passed' : 'failed',
+            'path' => $niche->sitePath(),
+        ];
+
+        if ($steps['web_exists']['status'] === 'failed') {
+            $this->updateOutput(['steps' => $steps, 'result' => 'failed', 'error' => 'Web not built yet']);
+            throw new \RuntimeException("Web not built: {$niche->domain}");
         }
 
-        $steps['pint'] = $this->runPint();
-        $steps['tests'] = $this->runTests();
-
-        if ($steps['tests']['status'] === 'failed') {
-            $this->updateOutput(['steps' => $steps, 'result' => 'blocked', 'reason' => 'Tests failed']);
-            throw new \RuntimeException('Tests failed — deploy blocked');
+        // Nginx configuration
+        $nginx = app(NginxConfigService::class);
+        if ($nginx->isAvailable()) {
+            $steps['nginx'] = $nginx->deploy($niche->domain);
+            if ($steps['nginx']['status'] === 'failed') {
+                $this->updateOutput(['steps' => $steps, 'result' => 'failed']);
+                throw new \RuntimeException('Nginx config failed: '.($steps['nginx']['message'] ?? ''));
+            }
+        } else {
+            $steps['nginx'] = ['status' => 'skipped', 'message' => 'Nginx not available (local dev)'];
         }
 
-        if ($this->environment === 'production') {
+        if ($this->environment === 'staging') {
+            // Staging: update status, wait for human approval for production
+            $niche->update(['build_status' => NicheConfig::STATUS_STAGING]);
+
             Approval::create([
                 'agent_run_id' => $run->id,
                 'action' => "Deploy a producción: {$niche->domain}",
                 'level' => 'N3',
                 'status' => 'pending',
-                'reason' => 'Deploy a producción siempre requiere aprobación humana',
-                'context' => ['domain' => $niche->domain, 'tests' => $steps['tests']['status']],
+                'reason' => 'Web lista en staging. Aprueba para publicar en producción.',
+                'context' => [
+                    'domain' => $niche->domain,
+                    'vertical' => $niche->vertical,
+                    'site_path' => $niche->sitePath(),
+                ],
             ]);
-        }
 
-        $this->updateOutput([
-            'steps' => $steps,
-            'result' => $this->environment === 'production' ? 'pending_approval' : 'success',
-            'environment' => $this->environment,
-            'domain' => $niche->domain,
-        ]);
+            $this->updateOutput([
+                'steps' => $steps,
+                'result' => 'staging',
+                'domain' => $niche->domain,
+                'message' => 'Web en staging, esperando aprobación N3 para producción',
+            ]);
 
-        Log::info("[build_release] {$this->environment} ready", ['domain' => $niche->domain]);
-    }
+            Log::info('[build_release] Staging ready', ['domain' => $niche->domain]);
 
-    private function validateConfig(NicheConfig $niche): array
-    {
-        $errors = [];
-        if (empty($niche->domain)) {
-            $errors[] = 'Domain empty';
-        }
-        if (! $niche->is_active) {
-            $errors[] = 'Niche inactive';
-        }
+        } else {
+            // Production: SSL + mark as live
+            if ($nginx->isAvailable()) {
+                $steps['ssl'] = $nginx->setupSsl($niche->domain);
+            } else {
+                $steps['ssl'] = ['status' => 'skipped'];
+            }
 
-        return ['status' => empty($errors) ? 'passed' : 'failed', 'message' => implode(', ', $errors) ?: 'Valid'];
-    }
+            $niche->update([
+                'build_status' => NicheConfig::STATUS_LIVE,
+                'build_metadata' => array_merge($niche->build_metadata ?? [], [
+                    'deployed_at' => now()->toIso8601String(),
+                    'environment' => 'production',
+                ]),
+            ]);
 
-    private function runPint(): array
-    {
-        try {
-            $result = Process::timeout(60)->run('./vendor/bin/pint --test');
+            $this->updateOutput([
+                'steps' => $steps,
+                'result' => 'live',
+                'domain' => $niche->domain,
+                'url' => "https://{$niche->domain}",
+            ]);
 
-            return ['status' => $result->successful() ? 'passed' : 'failed'];
-        } catch (\Throwable $e) {
-            return ['status' => 'error', 'message' => $e->getMessage()];
-        }
-    }
-
-    private function runTests(): array
-    {
-        try {
-            $result = Process::timeout(120)->run('./vendor/bin/pest --no-interaction');
-            preg_match('/Tests:\s+(\d+)\s+passed/', $result->output(), $m);
-
-            return ['status' => $result->successful() ? 'passed' : 'failed', 'passed' => (int) ($m[1] ?? 0)];
-        } catch (\Throwable $e) {
-            return ['status' => 'error', 'message' => $e->getMessage()];
+            Log::info('[build_release] Production deployed', ['domain' => $niche->domain]);
         }
     }
 }

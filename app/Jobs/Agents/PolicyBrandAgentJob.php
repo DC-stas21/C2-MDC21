@@ -4,6 +4,7 @@ namespace App\Jobs\Agents;
 
 use App\Models\AgentRun;
 use App\Models\Approval;
+use App\Models\NicheConfig;
 use App\Models\Policy;
 use App\Services\AI\ClaudeService;
 use Illuminate\Support\Collection;
@@ -69,7 +70,16 @@ class PolicyBrandAgentJob extends BaseAgentJob
             'decision' => $result['decision'],
         ]);
 
-        // 4. If rejected → create N3 approval for human override
+        // 4. If approved + site_config → chain to QA(qa_web)
+        if ($result['decision'] === 'approved' && $this->contentType === 'site_config' && $this->assetDomain) {
+            $niche = NicheConfig::where('domain', $this->assetDomain)->first();
+            if ($niche) {
+                QAExperimentationAgentJob::dispatch($niche->id, 'qa_web');
+                Log::info('[policy_brand] Site config approved, dispatching QA', ['domain' => $this->assetDomain]);
+            }
+        }
+
+        // 5. If rejected → create N3 approval for human override
         if ($result['decision'] === 'rejected') {
             Approval::create([
                 'agent_run_id' => $run->id,

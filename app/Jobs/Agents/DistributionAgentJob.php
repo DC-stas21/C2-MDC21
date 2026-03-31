@@ -4,7 +4,6 @@ namespace App\Jobs\Agents;
 
 use App\Models\AgentRun;
 use App\Models\Approval;
-use App\Models\BlogPost;
 use App\Models\NicheConfig;
 use Illuminate\Support\Facades\Log;
 
@@ -13,7 +12,7 @@ class DistributionAgentJob extends BaseAgentJob
     public function __construct(
         private readonly string $nicheConfigId,
         private readonly string $channel,
-        private readonly ?string $blogPostId = null
+        private readonly ?string $contentTitle = null
     ) {
         $this->onQueue('agents');
     }
@@ -25,19 +24,17 @@ class DistributionAgentJob extends BaseAgentJob
 
     protected function input(): array
     {
-        return ['niche_config_id' => $this->nicheConfigId, 'channel' => $this->channel, 'blog_post_id' => $this->blogPostId];
+        return ['niche_config_id' => $this->nicheConfigId, 'channel' => $this->channel];
     }
 
     protected function execute(AgentRun $run): void
     {
         $niche = NicheConfig::findOrFail($this->nicheConfigId);
-        $post = $this->blogPostId ? BlogPost::find($this->blogPostId) : null;
-        $title = $post?->title ?? "Contenido sobre {$niche->vertical}";
+        $title = $this->contentTitle ?? "Contenido sobre {$niche->vertical}";
 
         $content = match ($this->channel) {
             'linkedin' => "¿Sabías que...?\n\n{$title}\n\nEn {$niche->domain} hemos analizado los datos más recientes del sector {$niche->vertical}.\n\nLee más en {$niche->domain}",
             'twitter' => "{$title}\n\nDatos actualizados para España.\n\n{$niche->domain}",
-            'newsletter' => "Hola,\n\nEsta semana en {$niche->domain}: {$title}\n\nVisita {$niche->domain} para leer más.\n\nEquipo MDC21",
             default => "Nuevo contenido en {$niche->domain}: {$title}",
         };
 

@@ -5,6 +5,8 @@ import FeaturesGrid from '@/components/FeaturesGrid.vue';
 import FaqSection from '@/components/FaqSection.vue';
 import CtaSection from '@/components/CtaSection.vue';
 import CalculatorTool from '@/components/tools/CalculatorTool.vue';
+import ComparatorTool from '@/components/tools/ComparatorTool.vue';
+import CheckerTool from '@/components/tools/CheckerTool.vue';
 import LeadFormTool from '@/components/tools/LeadFormTool.vue';
 
 defineProps<{
@@ -23,6 +25,8 @@ const componentMap: Record<string, any> = {
     faq: FaqSection,
     cta: CtaSection,
     tool: CalculatorTool,
+    comparator: ComparatorTool,
+    checker: CheckerTool,
     lead_form: LeadFormTool,
 };
 </script>
@@ -31,8 +35,13 @@ const componentMap: Record<string, any> = {
     <div>
         <template v-for="(section, i) in page.sections" :key="i">
             <component
+                :is="componentMap[section.tool_type || section.type]"
+                v-if="componentMap[section.tool_type || section.type]"
+                v-bind="section"
+            />
+            <component
                 :is="componentMap[section.type]"
-                v-if="componentMap[section.type]"
+                v-else-if="componentMap[section.type]"
                 v-bind="section"
             />
         </template>
