@@ -5,25 +5,25 @@ import { useI18n } from 'vue-i18n';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import type { Approval } from '@/types';
 import AgentActivityChart from '@/Components/Charts/AgentActivityChart.vue';
-import ScoreGaugeChart from '@/Components/Charts/ScoreGaugeChart.vue';
 import AgentStatusGrid from '@/Components/AgentStatusGrid.vue';
 import ActivityTimeline from '@/Components/ActivityTimeline.vue';
 import ApprovalRow from '@/Components/ApprovalRow.vue';
 import { useRealtimeDashboard } from '@/composables/useRealtimeDashboard';
 
 const { t } = useI18n();
-const { lastAgentEvent, isConnected, eventCount } = useRealtimeDashboard();
+const { isConnected } = useRealtimeDashboard();
 
 const props = defineProps<{
     stats: {
         agents_active: number;
         agents_completed_today: number;
         agents_failed_today: number;
-        agents_total_week: number;
         approvals_pending: number;
-        approvals_resolved_today: number;
-        assets_total: number;
-        score_avg: number | null;
+        webs_total: number;
+        webs_live: number;
+        webs_building: number;
+        webs_staging: number;
+        webs_failed: number;
         success_rate: number | null;
     };
     agentStatuses: Array<{
@@ -37,86 +37,125 @@ const props = defineProps<{
     }>;
     pendingApprovals: Approval[];
     agentActivity: Array<{ date: string; agent_type: string; status: string; count: number }>;
-    assets: Array<{ id: string; domain: string; vertical: string; cpl: string; score: number | null; classification: string | null }>;
+    assets: Array<{
+        id: string; domain: string; vertical: string;
+        build_status: string; description: string;
+        last_build: string | null; error: string | null;
+    }>;
     timeline: Array<{ type: 'agent_run' | 'approval'; agent_type?: string; status: string; error?: string | null; action?: string; level?: string; at: string }>;
 }>();
 
-const sections = ref({
-    agents: true,
-    approvals: true,
-    activity: true,
-});
+const sections = ref({ agents: true, approvals: true, activity: true });
 
-function classifyLabel(score: number): string {
-    if (score >= 80) return 'Excelente';
-    if (score >= 60) return 'Bueno';
-    if (score >= 40) return 'Regular';
-    return 'Bajo';
-}
-
-function classColor(c: string | null): string {
-    const map: Record<string, string> = {
-        excellent: 'text-emerald-600', good: 'text-blue-600',
-        average: 'text-amber-600', poor: 'text-orange-600', critical: 'text-red-600',
-    };
-    return map[c ?? ''] ?? 'text-[#a1a1aa]';
-}
+const buildStatusStyle: Record<string, { label: string; dot: string; text: string }> = {
+    pending: { label: 'Pendiente', dot: 'bg-[#d4d4d8]', text: 'text-[#a1a1aa]' },
+    building: { label: 'Construyendo...', dot: 'bg-amber-500 animate-pulse', text: 'text-amber-600' },
+    staging: { label: 'En staging', dot: 'bg-blue-500', text: 'text-blue-600' },
+    live: { label: 'Publicado', dot: 'bg-emerald-500', text: 'text-emerald-600' },
+    failed: { label: 'Error', dot: 'bg-red-500', text: 'text-red-600' },
+};
 </script>
 
 <template>
     <AppLayout>
         <template #header>
-            <h1 class="text-[14px] font-medium text-[#09090b]">{{ t('dashboard.title') }}</h1>
+            <h1 class="text-[14px] font-medium text-[#09090b]">Panel de Control</h1>
         </template>
 
         <!-- ===== TOP METRICS ===== -->
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <!-- Webs overview -->
             <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
-                <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Agentes</p>
-                <p class="mt-1 text-[22px] font-semibold tracking-tight text-[#09090b]">{{ stats.agents_active }}</p>
-                <p class="text-[11px] text-[#a1a1aa]">{{ stats.agents_completed_today }} hoy · {{ stats.agents_total_week }} sem</p>
+                <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Webs</p>
+                <p class="mt-1 text-[22px] font-semibold text-[#09090b]">{{ stats.webs_total }}</p>
+                <p class="text-[11px] text-[#a1a1aa]">
+                    <span v-if="stats.webs_live > 0" class="text-emerald-600">{{ stats.webs_live }} live</span>
+                    <span v-if="stats.webs_building > 0" class="ml-1 text-amber-600">{{ stats.webs_building }} build</span>
+                    <span v-if="stats.webs_staging > 0" class="ml-1 text-blue-600">{{ stats.webs_staging }} staging</span>
+                </p>
             </div>
 
+            <!-- Agentes -->
+            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+                <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Agentes</p>
+                <p class="mt-1 text-[22px] font-semibold text-[#09090b]">{{ stats.agents_active }}</p>
+                <p class="text-[11px] text-[#a1a1aa]">{{ stats.agents_completed_today }} completados hoy</p>
+            </div>
+
+            <!-- Tasa éxito -->
             <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Tasa éxito</p>
-                <p class="mt-1 text-[22px] font-semibold tracking-tight" :class="stats.success_rate !== null && stats.success_rate >= 90 ? 'text-emerald-600' : stats.success_rate !== null && stats.success_rate >= 70 ? 'text-[#09090b]' : 'text-amber-600'">
+                <p class="mt-1 text-[22px] font-semibold" :class="stats.success_rate !== null && stats.success_rate >= 90 ? 'text-emerald-600' : 'text-[#09090b]'">
                     {{ stats.success_rate !== null ? `${stats.success_rate}%` : '—' }}
                 </p>
                 <p class="text-[11px] text-[#a1a1aa]">últimos 7 días</p>
             </div>
 
+            <!-- Fallidos -->
+            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
+                <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Fallidos hoy</p>
+                <p class="mt-1 text-[22px] font-semibold" :class="stats.agents_failed_today > 0 ? 'text-red-600' : 'text-[#09090b]'">{{ stats.agents_failed_today }}</p>
+            </div>
+
+            <!-- Aprobaciones -->
             <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
                 <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Aprobaciones</p>
-                <p class="mt-1 text-[22px] font-semibold tracking-tight" :class="stats.approvals_pending > 0 ? 'text-amber-600' : 'text-[#09090b]'">
-                    {{ stats.approvals_pending }}
-                </p>
-                <p class="text-[11px] text-[#a1a1aa]">{{ stats.approvals_resolved_today }} resueltas hoy</p>
+                <p class="mt-1 text-[22px] font-semibold" :class="stats.approvals_pending > 0 ? 'text-amber-600' : 'text-[#09090b]'">{{ stats.approvals_pending }}</p>
+                <p class="text-[11px] text-[#a1a1aa]">pendientes</p>
             </div>
 
+            <!-- Webs con error -->
             <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
-                <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Portafolio</p>
-                <p class="mt-1 text-[22px] font-semibold tracking-tight text-[#09090b]">{{ stats.assets_total }}</p>
-                <p class="text-[11px] text-[#a1a1aa]">activos operando</p>
-            </div>
-
-            <div class="rounded-lg border border-[#e4e4e7] bg-white px-4 py-3">
-                <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Score</p>
-                <p class="mt-1 text-[22px] font-semibold tracking-tight" :class="stats.score_avg !== null ? 'text-[#09090b]' : 'text-[#d4d4d8]'">
-                    {{ stats.score_avg ?? '—' }}
-                </p>
-                <p v-if="stats.score_avg" class="text-[11px] text-[#a1a1aa]">{{ classifyLabel(stats.score_avg) }}</p>
+                <p class="text-[11px] font-medium uppercase tracking-wide text-[#a1a1aa]">Errores</p>
+                <p class="mt-1 text-[22px] font-semibold" :class="stats.webs_failed > 0 ? 'text-red-600' : 'text-[#09090b]'">{{ stats.webs_failed }}</p>
+                <p class="text-[11px] text-[#a1a1aa]">webs con error</p>
             </div>
         </div>
 
-        <!-- ===== AGENTS SECTION ===== -->
+        <!-- ===== PIPELINE STATUS ===== -->
+        <div class="mt-6">
+            <div class="mb-3 flex items-center justify-between">
+                <h3 class="text-[13px] font-medium text-[#09090b]">
+                    Pipeline de webs
+                    <span class="text-[11px] font-normal text-[#a1a1aa]">— estado de cada activo</span>
+                </h3>
+                <Link href="/assets" class="text-[12px] text-[#71717a] hover:text-[#09090b]">Ver portafolio</Link>
+            </div>
+            <div v-if="assets.length === 0" class="rounded-lg border border-[#e4e4e7] bg-white py-8 text-center text-[13px] text-[#a1a1aa]">
+                Sin activos. Crea uno en /admin → Activos.
+            </div>
+            <div v-else class="grid gap-2">
+                <div
+                    v-for="asset in assets"
+                    :key="asset.id"
+                    class="flex items-center justify-between rounded-lg border border-[#e4e4e7] bg-white px-4 py-3"
+                >
+                    <div class="flex items-center gap-3">
+                        <span :class="['h-2.5 w-2.5 rounded-full', buildStatusStyle[asset.build_status]?.dot ?? 'bg-[#d4d4d8]']" />
+                        <div>
+                            <p class="text-[13px] font-medium text-[#09090b]">{{ asset.domain }}</p>
+                            <p class="text-[11px] text-[#a1a1aa]">{{ asset.vertical }} · {{ asset.description?.substring(0, 60) }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span :class="['text-[12px] font-medium', buildStatusStyle[asset.build_status]?.text ?? 'text-[#a1a1aa]']">
+                            {{ buildStatusStyle[asset.build_status]?.label ?? asset.build_status }}
+                        </span>
+                        <p v-if="asset.error" class="max-w-[200px] truncate text-[10px] text-red-500">{{ asset.error }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== AGENTS ===== -->
         <div class="mt-6">
             <div class="mb-3 flex items-center justify-between">
                 <button class="flex items-center gap-1.5 text-[13px] font-medium text-[#09090b]" @click="sections.agents = !sections.agents">
                     <svg :class="['h-3 w-3 text-[#a1a1aa] transition-transform', sections.agents ? 'rotate-90' : '']" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
-                    Estado de agentes
-                    <span class="text-[11px] font-normal text-[#a1a1aa]">— 9 agentes, 3 capas</span>
+                    Agentes del pipeline
+                    <span class="text-[11px] font-normal text-[#a1a1aa]">— 6 agentes core</span>
                 </button>
                 <Link href="/agent-runs" class="text-[12px] text-[#71717a] hover:text-[#09090b]">Historial</Link>
             </div>
@@ -127,16 +166,12 @@ function classColor(c: string | null): string {
 
         <!-- ===== MAIN GRID ===== -->
         <div class="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-12">
-
-            <!-- LEFT: 8 cols -->
+            <!-- LEFT -->
             <div class="space-y-5 lg:col-span-8">
                 <div class="rounded-lg border border-[#e4e4e7] bg-white px-5 py-4">
-                    <div class="mb-3 flex items-center justify-between">
-                        <div>
-                            <h3 class="text-[13px] font-medium text-[#09090b]">Actividad semanal</h3>
-                            <p class="text-[11px] text-[#a1a1aa]">Ejecuciones por día y estado de los últimos 7 días</p>
-                        </div>
-                        <span class="rounded-md border border-[#e4e4e7] px-2 py-0.5 text-[11px] font-medium text-[#71717a]">{{ stats.agents_total_week }} total</span>
+                    <div class="mb-3">
+                        <h3 class="text-[13px] font-medium text-[#09090b]">Actividad semanal</h3>
+                        <p class="text-[11px] text-[#a1a1aa]">Ejecuciones de agentes por día</p>
                     </div>
                     <AgentActivityChart :data="agentActivity" />
                 </div>
@@ -154,7 +189,7 @@ function classColor(c: string | null): string {
                     </div>
                     <div v-show="sections.approvals">
                         <div v-if="pendingApprovals.length === 0" class="py-6 text-center text-[13px] text-[#a1a1aa]">
-                            Todo aprobado. Sin tareas pendientes.
+                            Sin tareas pendientes.
                         </div>
                         <div v-else class="-mx-3">
                             <ApprovalRow v-for="approval in pendingApprovals" :key="approval.id" :approval="approval" />
@@ -163,27 +198,8 @@ function classColor(c: string | null): string {
                 </div>
             </div>
 
-            <!-- RIGHT: 4 cols -->
+            <!-- RIGHT -->
             <div class="space-y-5 lg:col-span-4">
-                <div class="rounded-lg border border-[#e4e4e7] bg-white px-5 py-4">
-                    <h3 class="text-[13px] font-medium text-[#09090b]">Score del portafolio</h3>
-                    <p class="text-[11px] text-[#a1a1aa]">Promedio ponderado de {{ stats.assets_total }} activos</p>
-                    <ScoreGaugeChart :score="stats.score_avg" />
-                    <div class="mt-2 space-y-0 border-t border-[#f4f4f5] pt-2">
-                        <div v-for="asset in assets" :key="asset.id" class="flex items-center justify-between py-1.5">
-                            <div>
-                                <p class="text-[12px] font-medium text-[#09090b]">{{ asset.domain }}</p>
-                                <p class="text-[10px] text-[#a1a1aa]">{{ asset.vertical }}</p>
-                            </div>
-                            <div v-if="asset.score !== null" class="text-right">
-                                <span class="text-[13px] font-semibold text-[#09090b]">{{ asset.score }}</span>
-                                <p :class="['text-[10px] font-medium', classColor(asset.classification)]">{{ asset.classification }}</p>
-                            </div>
-                            <span v-else class="text-[12px] text-[#d4d4d8]">—</span>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="rounded-lg border border-[#e4e4e7] bg-white px-5 py-4">
                     <button class="mb-3 flex w-full items-center gap-1.5 text-[13px] font-medium text-[#09090b]" @click="sections.activity = !sections.activity">
                         <svg :class="['h-3 w-3 text-[#a1a1aa] transition-transform', sections.activity ? 'rotate-90' : '']" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

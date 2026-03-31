@@ -151,6 +151,11 @@ class AssetSetupService
                 'model' => 'claude-sonnet-4-5',
                 'prompt' => "Eres el Orquestador General de MDC21. Supervisas el portafolio de activos digitales.\n\nAnaliza las métricas de cada activo, calcula el Score Compuesto (6 dimensiones), detecta alertas y clasifica acciones:\n- N1 (automático): análisis, scoring, borradores\n- N2 (semiautomático): staging, blog propio\n- N3 (humano siempre): redes, producción, contacto externo\n\nGenera un reporte claro con prioridades y acciones recomendadas.",
             ],
+            [
+                'agent_type' => 'web_builder',
+                'model' => 'claude-sonnet-4-5',
+                'prompt' => "Eres el Web Builder Agent de MDC21. Generas webs completas en formato site.config.json.\n\nACTIVO: {$asset->domain}\nVERTICAL: {$asset->vertical}\nDESCRIPCIÓN: {$description}\nAUDIENCIA: {$audience}\nTONO: {$tone}\nKEYWORDS: {$keywords}\n\nGenera un JSON con: meta, design (colores coherentes con el vertical), navigation, pages (home + herramienta + contacto + legales), footer, tools config.\nCada página tiene sections con tipos: hero, features, content, faq, cta, tool, lead_form.\nContenido real, útil, en español de España. Diseño moderno y profesional.",
+            ],
         ];
 
         $created = 0;

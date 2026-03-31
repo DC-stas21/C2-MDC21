@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "domain": "example.com",
+    "vertical": "General",
+    "language": "es",
+    "title": "Mi Web",
+    "description": "Descripción de la web"
+  },
+  "design": {
+    "colors": {
+      "primary": "#4f46e5",
+      "secondary": "#0ea5e9",
+      "accent": "#f59e0b",
+      "background": "#ffffff",
+      "surface": "#f8fafc",
+      "text": "#1e293b",
+      "text_muted": "#64748b"
+    },
+    "fonts": {
+      "heading": "Inter",
+      "body": "Inter"
+    },
+    "border_radius": "0.5rem",
+    "style": "modern_clean"
+  },
+  "navigation": [
+    { "label": "Inicio", "slug": "/" }
+  ],
+  "pages": [
+    {
+      "slug": "/",
+      "type": "home",
+      "seo": {
+        "title": "Mi Web",
+        "description": "Descripción de la web"
+      },
+      "sections": [
+        {
+          "type": "hero",
+          "headline": "Bienvenido",
+          "subtitle": "Tu web generada por C2",
+          "cta": { "text": "Empezar", "link": "#" }
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "copyright": "© 2026",
+    "links": [],
+    "disclaimer": ""
+  },
+  "tools": {
+    "lead_form": {
+      "enabled": false,
+      "endpoint": "",
+      "fields": [],
+      "asset_domain": ""
+    }
+  },
+  "build": {
+    "generated_at": "",
+    "generator": "placeholder",
+    "config_version": 0
+  }
+}

@@ -35,27 +35,21 @@ function timeAgo(dateStr: string | null): string {
 }
 
 const layerMap: Record<string, string> = {
-    orchestrator: 'Capa 0',
-    policy_brand: 'Capa 0',
-    seo_content: 'Capa 1',
-    distribution: 'Capa 1',
-    engagement_retention: 'Capa 1',
-    monetization_leads: 'Capa 1',
-    build_release: 'Capa 2',
-    infra_reliability: 'Capa 2',
-    qa_experimentation: 'Capa 2',
+    orchestrator: 'Orquestación',
+    web_builder: 'Generación',
+    policy_brand: 'Validación',
+    qa_experimentation: 'Testing',
+    build_release: 'Deploy',
+    infra_reliability: 'Monitoreo',
 };
 
 const descMap: Record<string, string> = {
-    orchestrator: 'Claude Sonnet · ciclo 12h · Score Compuesto + clasificación N1/N2/N3',
-    policy_brand: 'Claude Haiku · filtro transversal · aprueba/rechaza contenido',
-    seo_content: 'GPT-4o + GPT-4o-mini · research SERP + artículos E-E-A-T',
-    distribution: 'Claude + GPT-4o · prepara contenido para publicación humana',
-    engagement_retention: 'GPT-4o-mini · newsletters, FAQs, drip, PDFs, A/B tests',
-    monetization_leads: 'Claude + GPT-4o · scoring leads + propuestas CPL',
-    build_release: 'Script · GitHub Actions + Forge · deploy + rollback',
-    infra_reliability: 'Script · cada hora · monitoreo infra + alertas',
-    qa_experimentation: 'Playwright + Lighthouse + Pest · QA + A/B tests',
+    orchestrator: 'Claude Sonnet · cada 12h · detecta activos nuevos, planifica builds',
+    web_builder: 'Claude Sonnet · genera site.config.json → diseño + páginas + contenido',
+    policy_brand: 'Claude Haiku · valida contenido contra políticas antes de publicar',
+    qa_experimentation: 'Pest + Lighthouse · testea la web antes del deploy',
+    build_release: 'Script · Pint + Pest + staging → producción con aprobación N3',
+    infra_reliability: 'Script · cada hora · DB, Redis, disco, uptime de cada web',
 };
 </script>
 

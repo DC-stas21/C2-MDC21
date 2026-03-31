@@ -1,34 +1,25 @@
 {
     "dashboard": {
-        "title": "Control Center",
-        "agents_active": "Active agents",
-        "approvals_pending": "Pending approvals",
-        "assets_total": "Total assets",
-        "score_avg": "Portfolio avg score",
-        "completed_today": "completed today",
-        "agent_activity": "Agent activity (7 days)",
-        "portfolio_score": "Portfolio score",
-        "active_assets": "Active assets"
+        "title": "Control Center"
     },
     "nav": {
         "dashboard": "Dashboard",
         "agents": "Agents",
         "approvals": "Approvals",
-        "assets": "Assets",
-        "content": "Content",
-        "leads": "Leads",
+        "assets": "Webs",
         "system_online": "System online"
     },
     "agents": {
-        "orchestrator": "General Orchestrator",
+        "orchestrator": "Orchestrator",
+        "web_builder": "Web Builder",
         "policy_brand": "Policy & Brand",
+        "build_release": "Build & Release",
+        "infra_reliability": "Infra & Monitoring",
+        "qa_experimentation": "QA & Testing",
         "seo_content": "SEO & Content",
         "distribution": "Distribution",
-        "engagement_retention": "Engagement & Retention",
-        "monetization_leads": "Monetization & Leads",
-        "build_release": "Build & Release",
-        "infra_reliability": "Infra & Reliability",
-        "qa_experimentation": "QA & Experimentation",
+        "engagement_retention": "Engagement",
+        "monetization_leads": "Monetization",
         "status": {
             "pending": "Pending",
             "running": "Running",
@@ -65,18 +56,6 @@
         "deny_reason": "Reason for denial...",
         "approved_today": "Approved today",
         "denied_today": "Denied today"
-    },
-    "assets": {
-        "total": "Total assets",
-        "active": "Active",
-        "inactive": "Inactive"
-    },
-    "score": {
-        "excellent": "Excellent",
-        "good": "Good",
-        "average": "Average",
-        "poor": "Poor",
-        "critical": "Critical"
     },
     "common": {
         "save": "Save",

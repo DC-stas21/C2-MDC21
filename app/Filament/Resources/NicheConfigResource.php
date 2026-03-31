@@ -3,9 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\NicheConfigResource\Pages;
+use App\Jobs\Agents\WebBuilderAgentJob;
 use App\Models\NicheConfig;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -132,6 +134,26 @@ class NicheConfigResource extends Resource
                     ->label('Descripción')
                     ->limit(50)
                     ->tooltip(fn ($record) => $record->config['description'] ?? ''),
+                Tables\Columns\TextColumn::make('build_status')
+                    ->label('Estado web')
+                    ->badge()
+                    ->color(fn (string $state) => match ($state) {
+                        'pending' => 'gray',
+                        'building' => 'warning',
+                        'staging' => 'info',
+                        'live' => 'success',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state) => match ($state) {
+                        'pending' => 'Pendiente',
+                        'building' => 'Construyendo...',
+                        'staging' => 'En staging',
+                        'live' => 'Publicado',
+                        'failed' => 'Error',
+                        default => $state,
+                    })
+                    ->sortable(),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Activo')
                     ->boolean(),
@@ -143,6 +165,17 @@ class NicheConfigResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('rebuild')
+                    ->label('Reconstruir')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('¿Reconstruir web?')
+                    ->modalDescription('Esto regenerará el diseño y contenido de la web. El build actual se sobrescribirá.')
+                    ->action(function (NicheConfig $record) {
+                        WebBuilderAgentJob::dispatch($record->id);
+                        Notification::make()->title('Web Builder iniciado')->body("Reconstruyendo {$record->domain}")->success()->send();
+                    }),
                 Tables\Actions\DeleteAction::make(),
             ]);
     }

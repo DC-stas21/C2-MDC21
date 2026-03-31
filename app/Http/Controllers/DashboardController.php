@@ -4,15 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\AgentRun;
 use App\Models\Approval;
-use App\Models\Lead;
 use App\Models\NicheConfig;
-use App\Services\ScoreComposite;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    /**
+     * Core agents for the web factory pipeline.
+     */
+    private const PIPELINE_AGENTS = [
+        'orchestrator', 'web_builder', 'policy_brand',
+        'qa_experimentation', 'build_release', 'infra_reliability',
+    ];
+
     public function __invoke(): Response
     {
         return Inertia::render('Dashboard', [
@@ -27,45 +32,34 @@ class DashboardController extends Controller
 
     private function getStats(): array
     {
+        $week = now()->subDays(7);
+        $totalWeek = AgentRun::where('created_at', '>=', $week)->whereIn('status', ['completed', 'failed'])->count();
+        $completedWeek = AgentRun::where('created_at', '>=', $week)->where('status', 'completed')->count();
+
         return [
             'agents_active' => AgentRun::where('status', 'running')->count(),
             'agents_completed_today' => AgentRun::where('status', 'completed')->whereDate('finished_at', today())->count(),
             'agents_failed_today' => AgentRun::where('status', 'failed')->whereDate('finished_at', today())->count(),
-            'agents_total_week' => AgentRun::where('created_at', '>=', now()->subDays(7))->count(),
             'approvals_pending' => Approval::where('status', 'pending')->count(),
-            'approvals_resolved_today' => Approval::whereIn('status', ['approved', 'denied'])->whereDate('decided_at', today())->count(),
-            'assets_total' => NicheConfig::where('is_active', true)->count(),
-            // Leads desactivado hasta implementación futura
-            'score_avg' => $this->calculatePortfolioScore(),
-            'success_rate' => $this->getSuccessRate(),
+            'webs_total' => NicheConfig::where('is_active', true)->count(),
+            'webs_live' => NicheConfig::where('build_status', NicheConfig::STATUS_LIVE)->count(),
+            'webs_building' => NicheConfig::where('build_status', NicheConfig::STATUS_BUILDING)->count(),
+            'webs_staging' => NicheConfig::where('build_status', NicheConfig::STATUS_STAGING)->count(),
+            'webs_failed' => NicheConfig::where('build_status', NicheConfig::STATUS_FAILED)->count(),
+            'success_rate' => $totalWeek > 0 ? round(($completedWeek / $totalWeek) * 100, 1) : null,
         ];
     }
 
     private function getAgentStatuses(): array
     {
-        $agents = [
-            'orchestrator', 'policy_brand', 'seo_content', 'distribution',
-            'engagement_retention', 'monetization_leads', 'build_release',
-            'infra_reliability', 'qa_experimentation',
-        ];
-
-        return collect($agents)->map(function (string $type) {
+        return collect(self::PIPELINE_AGENTS)->map(function (string $type) {
             $lastRun = AgentRun::where('agent_type', $type)
                 ->latest('created_at')
                 ->first(['status', 'started_at', 'finished_at', 'error']);
 
-            $todayCount = AgentRun::where('agent_type', $type)
-                ->whereDate('created_at', today())
-                ->count();
-
-            $todayFailed = AgentRun::where('agent_type', $type)
-                ->where('status', 'failed')
-                ->whereDate('created_at', today())
-                ->count();
-
-            $isRunning = AgentRun::where('agent_type', $type)
-                ->where('status', 'running')
-                ->exists();
+            $isRunning = AgentRun::where('agent_type', $type)->where('status', 'running')->exists();
+            $todayRuns = AgentRun::where('agent_type', $type)->whereDate('created_at', today())->count();
+            $todayFailed = AgentRun::where('agent_type', $type)->where('status', 'failed')->whereDate('created_at', today())->count();
 
             return [
                 'type' => $type,
@@ -73,7 +67,7 @@ class DashboardController extends Controller
                 'last_status' => $lastRun?->status,
                 'last_run_at' => $lastRun?->started_at,
                 'last_error' => $lastRun?->error,
-                'today_runs' => $todayCount,
+                'today_runs' => $todayRuns,
                 'today_failed' => $todayFailed,
             ];
         })->all();
@@ -102,17 +96,16 @@ class DashboardController extends Controller
     private function getAssets(): array
     {
         return NicheConfig::where('is_active', true)
-            ->get(['id', 'domain', 'vertical', 'cpl'])
+            ->get(['id', 'domain', 'vertical', 'build_status', 'build_metadata', 'config'])
             ->map(function (NicheConfig $niche) {
-                $score = Cache::get("score_composite:{$niche->id}");
-
                 return [
                     'id' => $niche->id,
                     'domain' => $niche->domain,
                     'vertical' => $niche->vertical,
-                    'cpl' => $niche->cpl,
-                    'score' => $score,
-                    'classification' => $score !== null ? app(ScoreComposite::class)->classify($score) : null,
+                    'build_status' => $niche->build_status,
+                    'description' => $niche->config['description'] ?? '',
+                    'last_build' => $niche->build_metadata['last_build_at'] ?? null,
+                    'error' => $niche->build_metadata['error'] ?? null,
                 ];
             })
             ->all();
@@ -154,42 +147,5 @@ class DashboardController extends Controller
         }
 
         return $events->sortByDesc('at')->take(15)->values()->all();
-    }
-
-    private function getLeadsByStatus(): array
-    {
-        return Lead::selectRaw('status, COUNT(*) as count')
-            ->groupBy('status')
-            ->pluck('count', 'status')
-            ->toArray();
-    }
-
-    private function calculatePortfolioScore(): ?float
-    {
-        $niches = NicheConfig::where('is_active', true)->pluck('id');
-        if ($niches->isEmpty()) {
-            return null;
-        }
-
-        $scores = $niches->map(fn (string $id) => Cache::get("score_composite:{$id}"))->filter();
-
-        return $scores->isEmpty() ? null : round($scores->avg(), 1);
-    }
-
-    private function getSuccessRate(): ?float
-    {
-        $total = AgentRun::where('created_at', '>=', now()->subDays(7))
-            ->whereIn('status', ['completed', 'failed'])
-            ->count();
-
-        if ($total === 0) {
-            return null;
-        }
-
-        $completed = AgentRun::where('created_at', '>=', now()->subDays(7))
-            ->where('status', 'completed')
-            ->count();
-
-        return round(($completed / $total) * 100, 1);
     }
 }

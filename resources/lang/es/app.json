@@ -1,34 +1,25 @@
 {
     "dashboard": {
-        "title": "Panel de Control",
-        "agents_active": "Agentes activos",
-        "approvals_pending": "Aprobaciones pendientes",
-        "assets_total": "Activos totales",
-        "score_avg": "Score medio del portafolio",
-        "completed_today": "completados hoy",
-        "agent_activity": "Actividad de agentes (7 días)",
-        "portfolio_score": "Score del portafolio",
-        "active_assets": "Activos activos"
+        "title": "Panel de Control"
     },
     "nav": {
         "dashboard": "Dashboard",
         "agents": "Agentes",
         "approvals": "Aprobaciones",
-        "assets": "Activos",
-        "content": "Contenido",
-        "leads": "Leads",
+        "assets": "Webs",
         "system_online": "Sistema operativo"
     },
     "agents": {
-        "orchestrator": "Orquestador General",
+        "orchestrator": "Orquestador",
+        "web_builder": "Web Builder",
         "policy_brand": "Policy & Brand",
+        "build_release": "Build & Release",
+        "infra_reliability": "Infra & Monitoreo",
+        "qa_experimentation": "QA & Testing",
         "seo_content": "SEO & Contenido",
         "distribution": "Distribución",
-        "engagement_retention": "Engagement & Retención",
-        "monetization_leads": "Monetización & Leads",
-        "build_release": "Build & Release",
-        "infra_reliability": "Infra & Reliability",
-        "qa_experimentation": "QA & Experimentación",
+        "engagement_retention": "Engagement",
+        "monetization_leads": "Monetización",
         "status": {
             "pending": "Pendiente",
             "running": "Ejecutando",
@@ -61,22 +52,10 @@
             "approve": "Aprobar",
             "deny": "Denegar"
         },
-        "none_pending": "No hay aprobaciones pendientes",
+        "none_pending": "Sin aprobaciones pendientes",
         "deny_reason": "Razón de denegación...",
         "approved_today": "Aprobados hoy",
         "denied_today": "Denegados hoy"
-    },
-    "assets": {
-        "total": "Total activos",
-        "active": "Activos",
-        "inactive": "Inactivo"
-    },
-    "score": {
-        "excellent": "Excelente",
-        "good": "Bueno",
-        "average": "Regular",
-        "poor": "Bajo",
-        "critical": "Crítico"
     },
     "common": {
         "save": "Guardar",
