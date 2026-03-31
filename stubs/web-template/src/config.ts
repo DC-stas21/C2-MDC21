@@ -20,6 +20,23 @@ export interface SiteConfig {
         links: Array<{ label: string; slug: string }>;
         disclaimer: string;
     };
+    ads: {
+        adsense_id: string;
+        auto_ads: boolean;
+    };
+    blog: {
+        articles: Array<{
+            slug: string;
+            title: string;
+            excerpt: string;
+            body: string;
+            author: string;
+            date: string;
+            reading_time: number;
+            category: string;
+            sources: string[];
+        }>;
+    };
     tools: {
         lead_form: { enabled: boolean; endpoint: string; fields: string[]; asset_domain: string };
     };
@@ -27,5 +44,5 @@ export interface SiteConfig {
 }
 
 export function getConfig(): SiteConfig {
-    return siteConfig as SiteConfig;
+    return siteConfig as unknown as SiteConfig;
 }

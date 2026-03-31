@@ -43,6 +43,13 @@ class WebConfigTemplateService
                 ],
                 'disclaimer' => 'Esta información es orientativa y no constituye asesoramiento profesional.',
             ],
+            'ads' => [
+                'adsense_id' => config('services.adsense.client_id', ''),
+                'auto_ads' => true,
+            ],
+            'blog' => [
+                'articles' => [],
+            ],
             'tools' => [
                 'lead_form' => [
                     'enabled' => false,
@@ -283,6 +290,7 @@ class WebConfigTemplateService
                 $nav[] = ['label' => $label, 'slug' => $page['slug']];
             }
         }
+        $nav[] = ['label' => 'Blog', 'slug' => '/blog'];
 
         return $nav;
     }

@@ -6,19 +6,22 @@ export function useTheme() {
 
     onMounted(() => {
         const root = document.documentElement;
-        const { colors, fonts, border_radius } = config.design;
+        const { colors, fonts, border_radius, style } = config.design;
 
-        // Set CSS custom properties for colors
+        // Colors
         Object.entries(colors).forEach(([key, value]) => {
             root.style.setProperty(`--site-color-${key}`, value);
         });
 
-        // Set fonts
+        // Fonts
         root.style.setProperty('--site-font-heading', fonts.heading);
         root.style.setProperty('--site-font-body', fonts.body);
         root.style.setProperty('--site-radius', border_radius);
 
-        // Update page title and meta
+        // Style variant
+        root.setAttribute('data-style', style || 'modern_clean');
+
+        // Page meta
         document.title = config.meta.title;
         const metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) {
@@ -29,5 +32,8 @@ export function useTheme() {
             meta.content = config.meta.description;
             document.head.appendChild(meta);
         }
+
+        // Language
+        document.documentElement.lang = config.meta.language || 'es';
     });
 }
